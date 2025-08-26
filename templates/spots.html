@@ -1,0 +1,30 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Spots
+{% endblock %}
+
+{% block header %}{% endblock %}{% block favorites %}{% endblock %}
+
+{% block main %}
+
+    <!-- Row with column title  and row with columns spots -->
+    <div class="row spots-page-body justify-content-center mb-2 pb-2 mb-xl-0 pb-xl-0">
+
+        <!-- Column spots title -->
+        <div class="row spots-title text-center mb-4 pb-4 mb-xxl-5">
+            <h2 class="spots-title">Spots</h2>
+        </div>
+
+        <!-- Row with columns list of spots -->
+        <div class="row spots-list text-center">
+            {% for spot in spots %}
+                <a class="col-12 col-md-6 col-xl-3 items-spots-list text-dark text-decoration-none" href="/spots/{{ spot|lower|replace(" ", "_") }}" style="white-space: nowrap;">{{ spot }}</a>
+            {% endfor %}
+        </div>
+
+    </div>
+    
+{% endblock %}
+
+{% block footer %}{% endblock %}

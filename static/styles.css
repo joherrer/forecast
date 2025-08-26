@@ -1,0 +1,176 @@
+/* Css file to style */ 
+
+/* Body style */ 
+body {
+    background-color: black;
+    background-image: url('/static/gold-coast.jpeg');
+    background-size: cover;
+    background-position: center bottom;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    overflow: fixed;
+}
+
+/* Navbar style */ 
+.nav-logo {
+    font-family: "Arsenal", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 27px;
+    color: black;
+    z-index: 1;
+  }
+
+.dropdown-toggle {
+    font-family: "Arsenal", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 25px;
+    border: none;
+    background-color: transparent;  
+}
+
+.dropdown-menu,.dropdown-item {
+    font-family: "Arsenal", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 18px;
+    color: black;
+    border: none;
+    background-color: transparent;
+}
+
+.dropdown-item:hover {
+    color: black;
+    font-weight: bolder;
+    border: none;
+    background-color: transparent;
+}
+
+/* Spot page style */ 
+.spot-title {
+    font-family: "Satisfy", cursive;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 50px;
+  }
+
+.spot-date {
+    font-family: "Arsenal", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    color: black;
+}
+
+.wave-info-extended-text {
+    font-family: "Arsenal", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    color: black;
+
+}
+
+table tr td, table th {
+    background-color: transparent !important;
+    border-color: black;
+}
+
+/* Spots page style */
+.spots-title {
+    font-family: "Arsenal", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 40px;
+}
+
+.items-spots-list {
+    font-family: "Satisfy", cursive;
+    font-weight: 400;
+    color: black;
+    font-style: normal;
+    font-size: 35px;
+    padding-bottom: 30px;
+}
+
+.items-spots-list:hover {
+    color:black !important;
+    font-style: bolder;
+    border: none;
+    background-color: transparent;
+}
+
+/* Login style */
+.login-link {
+    font-family: "Arsenal", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    color: black;
+    font-size: 20px;
+}
+
+.login-link:hover {
+    color: bisque !important;
+}
+
+/* Register style */
+.register-link {
+    font-family: "Arsenal", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    color: black;
+    font-size: 20px;
+}
+
+.register-link:hover {
+    color: bisque !important;
+}
+
+/* Logout style */
+.logout-link {
+    font-family: "Arsenal", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    color: black;
+    font-size: 20px;
+}
+
+.logout-link:hover {
+    color: bisque !important;
+}
+
+/* Favorites style */
+.favorites-title {
+    font-family: "Arsenal", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    color: black;
+    font-size: 38px;
+}
+
+.favorites-link {
+    font-family: "Arsenal", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    color: black;
+    font-size: 20px;
+}
+
+.favorites-link:hover {
+    color: bisque !important;
+}
+
+.items-favorites-spots-list {
+    font-family: "Satisfy", cursive;
+    font-weight: 400;
+    color: black;
+    font-style: normal;
+    font-size: 35px;
+    padding-bottom: 30px;
+}
+
+.items-favorites-spots-list:hover {
+    color:black !important;
+    font-style: bolder;
+    border: none;
+    background-color: transparent;
+}
