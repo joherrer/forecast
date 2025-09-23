@@ -1,0 +1,63 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Favorites
+{% endblock %}
+
+{% block header %}{% endblock %}{% block favorites %}{% endblock %}
+
+{% block main %}
+
+    <div class="row justify-content-center align-items-center">
+
+        <!-- Favorites title -->
+        <div class="row favorites-title text-center">
+            <p>Your favorite surf spots</p>
+        </div>
+
+        <!-- Row select spot -->
+        <div class="row select-spot text-center mb-4 pb-4 mt-4 pt-4">
+            <!-- Form add spot -->
+            <div class="col-6 d-flex justify-content-end add-spot">
+                <form action="/add" method="post">
+                    <!-- Select spot list -->
+                    <select class="form-add mb-2 me-0 mb-md-0 me-md-2" name="spot">
+                        <option selected disabled value="">Select spot</option>
+                        {% for spot in spots %}
+                            <option value="{{ spot }}">{{ spot }}</option>
+                        {% endfor %}
+                    </select>
+                    <!-- Button add favorites -->
+                    <button class="btn btn-dark" type="submit">Add favorites</button>
+                </form>
+            </div>
+
+            <!-- Form remove spot -->
+            <div class="col-6 remove-spot d-flex justify-content-start">
+                <form action="/remove" method="post">
+                    <!-- Select spot list -->
+                    <select class="form-remove mb-2 me-0 mb-md-0 me-md-2" name="spotfav">
+                        <option selected disabled value="">Select spot</option>
+                        {% for spot in spots_fav %}
+                            <option value="{{ spot }}">{{ spot }}</option>
+                        {% endfor %}
+                    </select>
+                    <!-- Button remove favorites -->
+                    <button class="btn btn-dark" type="submit">Remove favorites</button>
+                </form>
+            </div>
+
+        </div>
+
+        <!-- Already added surf spots -->
+        <div class="row favorites-spots-list text-center mt-4 mb-2 pb-2 pb-sm-0 mb-sm-0">
+            {% for spot in spots_fav %}
+                <a class="col-12 col-sm-6 col-xl-3 items-favorites-spots-list text-dark text-decoration-none" href="/spots/{{ spot|lower|replace(" ", "_") }}" style="white-space: nowrap;">{{ spot }}</a>
+            {% endfor %}
+        </div>
+
+    </div>
+    
+{% endblock %}
+
+{% block footer %}{% endblock %}

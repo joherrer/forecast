@@ -1,0 +1,28 @@
+# Ignore compiled Python files
+*.pyc
+__pycache__/
+
+# Ignore Flask Session
+flask_session/
+
+# Ignore Python virtual environment
+venv/
+
+# Ignore environment variables
+.env
+
+# Ignore Database Files
+*.db
+forecast.db
+
+# Ignore macOS Finder metadata
+.DS_Store
+
+# Ignore other IDE-specific files
+.idea/
+.vscode/
+
+# Ignore logs and temporary files
+*.log
+*.tmp
+*.bak
