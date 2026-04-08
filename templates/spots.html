@@ -19,7 +19,7 @@
         <!-- Row with columns list of spots -->
         <div class="row spots-list text-center">
             {% for spot in spots %}
-                <a class="col-12 col-md-6 col-xl-3 items-spots-list text-dark text-decoration-none" href="/spots/{{ spot|lower|replace(" ", "_") }}" style="white-space: nowrap;">{{ spot }}</a>
+                <a class="col-12 col-md-6 col-xl-3 items-spots-list text-dark text-decoration-none" href="{{ url_for('spot_forecast', spot_route=spot|lower|replace(' ', '_')) }}" style="white-space: nowrap;">{{ spot }}</a>
             {% endfor %}
         </div>
 

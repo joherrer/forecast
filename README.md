@@ -20,7 +20,7 @@ Gold Coast Surf Forecast is a web application built using Python and Flask to of
 - **Database**: SQLite
 - **ORM**: SQLAlchemy
 - **Session Management**: Flask-Session
-- **Security**: Werkzeug
+- **Security**: Werkzeug, Flask-WTF
 
 ## 🏄 Usage
 1. Register a new account or log in if you already have one.
@@ -71,18 +71,34 @@ Gold Coast Surf Forecast is a web application built using Python and Flask to of
     pip install -r requirements.txt
     ```
 
-6. Start the Flask application:
+6. Configure environment variables:
+
+    ```bash
+    touch .env
+    ```
+
+    Add at least:
+
+    ```bash
+    SECRET_KEY=your-random-secret
+    SESSION_COOKIE_SECURE=0
+    FLASK_DEBUG=0
+    ```
+
+7. Start the Flask application:
 
     ```bash
     flask run
     ```
 
-7. Open your browser and go to `http://127.0.0.1:5000`.
+8. Open your browser and go to `http://127.0.0.1:5000`.
 
 ## 🗒️ Notes
 - This app uses SQLite as the database system and SQLAlchemy as the ORM to manage and store critical data, including user profiles, surf spot details, and real-time surf conditions.
 
-- The app uses Flask-Session for session management and Werkzeug for secure password hashing and user authentication.
+- The app uses Flask-Session for session management.
+
+- The app uses Werkzeug for secure password hashing and Flask-WTF for CSRF protection on form submissions.
 
 - The data is fetched from an external API (Surfline).
 
