@@ -1,0 +1,11 @@
+services:
+  web:
+    build: .
+    container_name: forecast-web
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=sqlite:////app/forecast.db
+    restart: unless-stopped

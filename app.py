@@ -35,7 +35,10 @@ csrf = CSRFProtect(app)
 
 # Configure database with SQLAlchemy.
 basedir = os.path.abspath(os.path.dirname(__file__))
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'forecast.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv(
+    'DATABASE_URL',
+    'sqlite:///' + os.path.join(basedir, 'forecast.db'),
+)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
@@ -44,7 +47,6 @@ class Users(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     hash = db.Column(db.String(255), nullable=False)
-    
     favorites = relationship('Favorites', back_populates='user')
     
 class Favorites(db.Model):
@@ -52,7 +54,6 @@ class Favorites(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     spot = db.Column(db.String(80), nullable=False)
-    
     user = relationship('Users', back_populates='favorites')
     
 # Create database tables if they don't exist.
@@ -109,6 +110,7 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
 
+    # Visiting the login page always logs out any existing user session.
     if request.method == 'GET':
         session.clear()
         error_message = request.args.get('error')
@@ -178,6 +180,7 @@ def spots_route():
 @app.route('/spots/<spot_route>', methods=['GET'])
 def spot_forecast(spot_route):
 
+    # Convert URL value to match dictionary keys.
     spot_name = spot_route.replace('_', ' ').title()
     spot_id = spots.get(spot_name)
     if not spot_id:
@@ -205,6 +208,7 @@ def spot_forecast(spot_route):
 def favorites():
     user_id = session['user_id']
     if request.method == 'POST':
+        # Use one POST route and branch by action to keep form handling in one place.
         action = request.form.get('action')
 
         if action == 'add':
