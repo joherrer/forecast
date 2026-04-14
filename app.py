@@ -1,11 +1,13 @@
 import os
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from dotenv import load_dotenv
 from flask import Flask, flash, redirect, render_template, request, session, url_for
 from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
+from sqlalchemy import UniqueConstraint
 from sqlalchemy.orm import relationship
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -51,6 +53,7 @@ class Users(db.Model):
     
 class Favorites(db.Model):
     __tablename__ = 'favorites'
+    __table_args__ = (UniqueConstraint('user_id', 'spot', name='uq_favorites_user_spot'),)
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     spot = db.Column(db.String(80), nullable=False)
@@ -89,6 +92,7 @@ spots = {
 }
 
 spot_slugs = {spot_name.lower().replace(' ', '_'): spot_name for spot_name in spots}
+spot_order = {spot_name: index for index, spot_name in enumerate(spots)}
 
 @app.route('/', methods=['GET'])
 def index():
@@ -96,10 +100,9 @@ def index():
       
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-
-    # Visiting the login page always logs out any existing user session.
     if request.method == 'GET':
-        session.clear()
+        if session.get('user_id'):
+            return redirect(url_for('index'))
         error_message = request.args.get('error')
         return render_template('login.html', error=error_message)
       
@@ -112,15 +115,23 @@ def login():
         return redirect(url_for('login', error='Must provide password'))
     
     user = Users.query.filter_by(username=username).first()
-    if user is None or not check_password_hash(user.hash, password):
+    try:
+        password_matches = user is not None and check_password_hash(user.hash, password)
+    except AttributeError:
+        password_matches = False
+
+    if not password_matches:
         return redirect(url_for('login', error='Invalid username or password'))
     
     session['user_id'] = user.id
+    flash('Logged in successfully', 'success')
     return redirect(url_for('index'))
            
 @app.route('/register', methods=['GET', 'POST'])
 def register():   
     if request.method == 'GET':
+        if session.get('user_id'):
+            return redirect(url_for('index'))
         return render_template('register.html')    
     
     username = (request.form.get('username') or '').strip()
@@ -147,15 +158,16 @@ def register():
         flash('Username already exists', 'warning')
         return redirect(url_for('register'))
     
-    password_hashed = generate_password_hash(password)
+    password_hashed = generate_password_hash(password, method='pbkdf2:sha256')
     new_user = Users(username=username, hash=password_hashed)
     db.session.add(new_user)
     db.session.commit()
     
     session['user_id'] = new_user.id
+    flash('Account created successfully!', 'success')
     return redirect(url_for('index'))
        
-@app.route('/logout', methods=['GET'])
+@app.route('/logout', methods=['POST'])
 def logout():
     session.clear()
     return redirect(url_for('index'))
@@ -184,7 +196,7 @@ def spot_forecast(spot_route):
         overview_hours=[6, 12, 18],
         forecast_hours=[6, 9, 12, 15, 18],
     )
-    current_date = datetime.now().strftime('%a, %d %B %Y')
+    current_date = datetime.now(ZoneInfo('Australia/Brisbane')).strftime('%a, %d %B %Y')
 
     return render_template(
         'forecast.html',
@@ -205,9 +217,13 @@ def favorites():
         action = request.form.get('action')
 
         if action == 'add':
-            spot = request.form.get('spot')
+            spot = (request.form.get('spot') or '').strip()
             if not spot:
                 flash('Must select spot to add', 'warning')
+                return redirect(url_for('favorites'))
+
+            if spot not in spots:
+                flash('Selected spot is invalid', 'warning')
                 return redirect(url_for('favorites'))
 
             existing_favorite = Favorites.query.filter_by(user_id=user_id, spot=spot).first()
@@ -222,9 +238,13 @@ def favorites():
             return redirect(url_for('favorites'))
 
         if action == 'remove':
-            spot = request.form.get('spot')
+            spot = (request.form.get('spot') or '').strip()
             if not spot:
                 flash('Must select spot to remove', 'warning')
+                return redirect(url_for('favorites'))
+
+            if spot not in spots:
+                flash('Selected spot is invalid', 'warning')
                 return redirect(url_for('favorites'))
 
             favorite_to_remove = Favorites.query.filter_by(user_id=user_id, spot=spot).first()
@@ -241,7 +261,8 @@ def favorites():
         return redirect(url_for('favorites'))
 
     favorites_table = Favorites.query.filter_by(user_id=user_id).all()
-    spots_fav = [favorite.spot for favorite in favorites_table]
+    spots_fav = [favorite.spot for favorite in favorites_table if favorite.spot in spots]
+    spots_fav.sort(key=lambda favorite_spot: spot_order[favorite_spot])
     return render_template('favorites.html', spots=spots, spots_fav=spots_fav)
       
 if __name__ == '__main__':

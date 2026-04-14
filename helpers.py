@@ -27,10 +27,14 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+def get_local_datetime(timestamp, utc_offset):
+    # Convert a Surfline timestamp into the spot's local datetime.
+    tzinfo = timezone(timedelta(hours=utc_offset or 0))
+    return datetime.fromtimestamp(timestamp, tz=tzinfo)
+
 def format_local_hour(timestamp, utc_offset):
     # Convert a Surfline timestamp into the spot's local hour.
-    tzinfo = timezone(timedelta(hours=utc_offset or 0))
-    dt = datetime.fromtimestamp(timestamp, tz=tzinfo)
+    dt = get_local_datetime(timestamp, utc_offset)
     hour = dt.strftime('%I %p').lower()
     return hour[1:] if hour.startswith('0') else hour
 
@@ -73,11 +77,11 @@ def build_swell_cells(swells, limit=2):
         })
 
     while len(cells) < limit:
-            cells.append({
-                'height': '-',
-                'period': '-',
-                'direction': {'label': '-', 'rotation': None},
-            })
+        cells.append({
+            'height': '-',
+            'period': '-',
+            'direction': {'label': '-', 'rotation': None},
+        })
 
     return cells
 
@@ -99,9 +103,15 @@ def build_forecast_rows(wave, wind, weather, overview_hours, forecast_hours):
         item_wave = wave_items[index]
         item_wind = wind_items[index]
         item_weather = weather_items[index]
+        timestamp = item_wave.get('timestamp')
+        if timestamp is None:
+            return None
+
+        local_dt = get_local_datetime(timestamp, utc_offset)
 
         return {
-            'time': format_local_hour(item_wave.get('timestamp'), utc_offset),
+            'hour': local_dt.hour,
+            'time': format_local_hour(timestamp, utc_offset),
             'surf_min': item_wave.get('surf', {}).get('min', '-'),
             'surf_max': item_wave.get('surf', {}).get('max', '-'),
             'surf_plus': bool(item_wave.get('surf', {}).get('plus')),
@@ -114,8 +124,14 @@ def build_forecast_rows(wave, wind, weather, overview_hours, forecast_hours):
             'probability': item_wave.get('probability'),
         }
 
-    overview_rows = [row for row in (build_row(index) for index in overview_hours) if row]
-    forecast_rows = [row for row in (build_row(index) for index in forecast_hours) if row]
+    rows_by_hour = {}
+    for index in range(total_rows):
+        row = build_row(index)
+        if row and row['hour'] not in rows_by_hour:
+            rows_by_hour[row['hour']] = row
+
+    overview_rows = [rows_by_hour[hour] for hour in overview_hours if hour in rows_by_hour]
+    forecast_rows = [rows_by_hour[hour] for hour in forecast_hours if hour in rows_by_hour]
     return {'overview_rows': overview_rows, 'forecast_rows': forecast_rows}
 
 def get_conditions_content(conditions):

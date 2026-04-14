@@ -91,7 +91,7 @@
                                 </td>
                             {% endfor %}
                             <td>{% if row.wind_speed is not none %}{{ row.wind_speed|int }}kts{% else %}-{% endif %} &nbsp;<span class="direction-text">{{ row.wind_direction.label }}{% if row.wind_direction.rotation is not none %}<span class="direction-arrow" style="--direction-rotation: {{ row.wind_direction.rotation }}deg;" aria-hidden="true"><svg viewBox="0 0 16 16" focusable="false"><path d="M8 2 11.5 5.5H9V14H7V5.5H4.5z"></path></svg></span>{% endif %}</span></td>
-                            <td>{% if row.temperature is not none %}{{ row.temperature|int }}°c{% else %}-{% endif %}</td>
+                            <td>{% if row.temperature is not none %}{{ row.temperature|int }}°C{% else %}-{% endif %}</td>
                             <td>{% if row.pressure is not none %}{{ row.pressure }}mb{% else %}-{% endif %}</td>
                             <td>{% if row.probability is not none %}{{ row.probability|int }}%{% else %}-{% endif %}</td>
                         </tr>

@@ -112,9 +112,10 @@
                     <!-- If user logged in  -->
                     {% if session.get('user_id') %}
                         <!-- Logout link -->
-                        <ul class="logout fixed-bottom m-2 m-sm-4 ps-2 pb-4">
-                            <span><a class="logout-link text-decoration-none text-dark ps-4" href="{{ url_for('logout') }}">Log out</a></span>
-                        </ul>
+                        <form class="logout fixed-bottom m-2 m-sm-4 ps-2 pb-4" action="{{ url_for('logout') }}" method="post">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button class="logout-link text-decoration-none text-dark ps-4" type="submit">Log out</button>
+                        </form>
                     {% else %}
                         <!-- Register and login links -->
                         <ul class="login-register fixed-bottom m-2 m-sm-4 pb-4">
