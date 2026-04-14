@@ -46,10 +46,18 @@
             </table>
         </div>
 
-        <!-- Observation text -->
-        <p class="observation mt-4 pt-3 pb-4 text-center">
-            {{ observation_text|default('', true)|striptags }}
-        </p>
+        {% if headline %}
+            <p class="observation mt-4 pt-3 mb-2 text-center fw-semibold">
+                {{ headline|striptags }}
+            </p>
+        {% endif %}
+
+        {% if observation_text %}
+            <!-- Observation text -->
+            <p class="observation pb-4 text-center">
+                {{ observation_text|striptags }}
+            </p>
+        {% endif %}
 
         <!-- Forecast extended header -->
         <h3 class="wave-info-extended-text mt-4 pt-4 mb-4 pb-4">Forecast</h3>

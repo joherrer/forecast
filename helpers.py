@@ -121,15 +121,22 @@ def build_forecast_rows(wave, wind, weather, overview_hours, forecast_hours):
     forecast_rows = [row for row in (build_row(index) for index in forecast_hours) if row]
     return {'overview_rows': overview_rows, 'forecast_rows': forecast_rows}
 
-def get_observation_text(conditions):
-    # Join all condition observations into one text block for the page.
+def get_conditions_content(conditions):
+    # Pull a concise headline and the longer observations for the page.
     items = (conditions or {}).get('data', {}).get('conditions', [])
+    headlines = []
     observations = []
     for item in items:
+        headline = item.get('headline')
+        if headline:
+            headlines.append(headline)
         observation = item.get('observation')
         if observation:
             observations.append(observation)
-    return ' '.join(observations)
+    return {
+        'headline': ' '.join(headlines),
+        'observation_text': ' '.join(observations),
+    }
 
 def get_forecast_info(forecast_type, spot_id):
     # Fetch one Surfline forecast endpoint for a single spot and day.

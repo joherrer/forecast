@@ -9,7 +9,7 @@ from flask_wtf.csrf import CSRFProtect
 from sqlalchemy.orm import relationship
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from helpers import build_forecast_rows, get_forecast_info, get_observation_text, login_required
+from helpers import build_forecast_rows, get_conditions_content, get_forecast_info, login_required
 
 # Load environment variables.
 load_dotenv()
@@ -176,6 +176,7 @@ def spot_forecast(spot_route):
     wind = get_forecast_info('wind', spot_id)
     weather = get_forecast_info('weather', spot_id)
     conditions = get_forecast_info('conditions', spot_id)
+    conditions_content = get_conditions_content(conditions)
     rows = build_forecast_rows(
         wave,
         wind,
@@ -189,7 +190,8 @@ def spot_forecast(spot_route):
         'forecast.html',
         spot_name=spot_name,
         current_date=current_date,
-        observation_text=get_observation_text(conditions),
+        headline=conditions_content['headline'],
+        observation_text=conditions_content['observation_text'],
         overview_rows=rows['overview_rows'],
         forecast_rows=rows['forecast_rows']
     )
