@@ -1,5 +1,5 @@
 # Gold Coast Surf Forecast
-![Python Version](https://img.shields.io/badge/python-3.13-blue)
+![Python Version](https://img.shields.io/badge/python-3.11-blue)
 ![Flask](https://img.shields.io/badge/Flask-%E2%9C%94-green)
 ![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-%E2%9C%94-green)
 
@@ -17,7 +17,7 @@ Gold Coast Surf Forecast is a web application built using Python and Flask to of
 ## 🖥️ Technology Stack
 - **Front-End**: HTML, CSS, Jinja2
 - **Back-End**: Python, Flask
-- **Database**: SQLite
+- **Database**: SQLite / PostgreSQL
 - **ORM**: SQLAlchemy
 - **Session Management**: Flask-Session
 - **Security**: Werkzeug, Flask-WTF
@@ -79,8 +79,8 @@ Gold Coast Surf Forecast is a web application built using Python and Flask to of
 
     Add at least:
 
-    ```bash
-    SECRET_KEY=your-random-secret
+    ```env
+    SECRET_KEY=your-random-key
     SESSION_COOKIE_SECURE=0
     FLASK_DEBUG=0
     ```
@@ -93,12 +93,38 @@ Gold Coast Surf Forecast is a web application built using Python and Flask to of
 
 8. Open your browser and go to `http://127.0.0.1:5000`.
 
+## 🐳 Docker (optional)
+
+### Prerequisites
+- Docker
+- Docker Compose
+
+### Run with Docker
+1. Make sure your `.env` file includes:
+
+    ```env
+    SECRET_KEY=your-random-key
+    SESSION_COOKIE_SECURE=0
+    FLASK_DEBUG=0
+    POSTGRES_DB=forecast
+    POSTGRES_USER=forecast_user
+    POSTGRES_PASSWORD=your-postgres-password
+    ```
+
+2. Build and start the containers:
+
+    ```bash
+    docker compose up --build
+    ```
+
+3. Open your browser and go to `http://127.0.0.1:5000`.
+
 ## 🗒️ Notes
-- This app uses SQLite as the database system and SQLAlchemy as the ORM to manage and store critical data, including user profiles, surf spot details, and real-time surf conditions.
+- The app uses SQLite for local development and PostgreSQL when running with Docker to manage and store user profiles, surf spot details, and real-time surf conditions.
 
-- The app uses Flask-Session for session management.
+- Flask-Session provides server-side session management.
 
-- The app uses Werkzeug for secure password hashing and Flask-WTF for CSRF protection on form submissions.
+- Werkzeug handles secure password hashing, and Flask-WTF provides CSRF protection for form submissions.
 
 - The data is fetched from an external API (Surfline).
 

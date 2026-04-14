@@ -11,7 +11,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from helpers import get_forecast_info, login_required
 
-# Load environment variables from .env file.
+# Load environment variables.
 load_dotenv()
 
 # Configure application.
@@ -25,7 +25,7 @@ if not app.config['SECRET_KEY']:
 # Configure server-side sessions.
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['SESSION_PERMANENT'] = False
-app.config['SESSION_COOKIE_SECURE'] = os.getenv('SESSION_COOKIE_SECURE', '0') == '1'
+app.config['SESSION_COOKIE_SECURE'] = os.getenv('SESSION_COOKIE_SECURE') == '1'
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 Session(app)
@@ -81,7 +81,8 @@ def degrees_to_cardinal(degrees):
     directions = ['N ↓', 'NNE ↙', 'NE ↙', 'ENE ↙', 'E ←', 'ESE ↖', 'SE ↖', 'SSE ↖',
                   'S ↑', 'SSW ↗', 'SW ↗', 'WSW ↗', 'W →', 'WNW ↘', 'NW ↘', 'NNW ↘']
     index = round(degrees / 22.5) % 16
-    return directions[index]
+    label, arrow = directions[index].split()
+    return {'label': label, 'arrow': arrow}
 
 # Spot names mapped to Surfline spot IDs.
 spots = {

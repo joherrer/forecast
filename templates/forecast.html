@@ -36,11 +36,13 @@
                             <td colspan="2">{{ item_wave['surf']['min']}}-{{ item_wave['surf']['max'] }}ft{% if item_wave['surf']['plus'] == 1 %}+{% else %}&nbsp;{% endif %}</td>
                             {% set sorted_swells = item_wave['swells']|sort(attribute='impact', reverse=True) %}
                             {% for swell in sorted_swells[:3] %}
+                                {% set swell_direction = swell['direction']|cardinal_direction %}
                                 <td>{% if '%0.1f' % swell['height'] == '1.0' %}1{% elif '%0.1f' % swell['height'] == '0.0' %}0{% else %}{{ '%0.1f' % swell['height']|float }}{% endif %}ft
                                 &nbsp;{{ swell['period'] }}s
-                                &nbsp;{{ swell['direction']|cardinal_direction }}</td>
+                                &nbsp;<span class="direction-text">{{ swell_direction.label }} <span class="direction-arrow{% if swell_direction.arrow in ['↑', '↓', '←', '→'] %} direction-arrow-straight{% endif %}">{{ swell_direction.arrow }}</span></span></td>
                             {% endfor %}
-                            <td>{{ item_wind['speed']|int }}kts &nbsp;{{ item_wind['direction']|cardinal_direction }}</td>
+                            {% set wind_direction = item_wind['direction']|cardinal_direction %}
+                            <td>{{ item_wind['speed']|int }}kts &nbsp;<span class="direction-text">{{ wind_direction.label }} <span class="direction-arrow{% if wind_direction.arrow in ['↑', '↓', '←', '→'] %} direction-arrow-straight{% endif %}">{{ wind_direction.arrow }}</span></span></td>
                         </tr>
                     {% endfor %}
                 </tbody>                                       
@@ -85,11 +87,13 @@
                             <td>{{ item_wave['power']|int }}</td>
                             {% set sorted_swells = item_wave['swells']|sort(attribute='impact', reverse=True) %}
                             {% for swell in sorted_swells[:3] %}
+                                {% set swell_direction = swell['direction']|cardinal_direction %}
                                 <td>{% if '%0.1f' % swell['height'] == '1.0' %}1{% elif '%0.1f' % swell['height'] == '0.0' %}0{% else %}{{ '%0.1f' % swell['height']|float }}{% endif %}ft
                                     &nbsp;{{ swell['period'] }}s
-                                    &nbsp;{{ swell['direction']|cardinal_direction }}</td>
+                                    &nbsp;<span class="direction-text">{{ swell_direction.label }} <span class="direction-arrow{% if swell_direction.arrow in ['↑', '↓', '←', '→'] %} direction-arrow-straight{% endif %}">{{ swell_direction.arrow }}</span></span></td>
                             {% endfor %}
-                            <td>{{ item_wind['speed']|int }}kts &nbsp;{{ item_wind['direction']|cardinal_direction }}</td>
+                            {% set wind_direction = item_wind['direction']|cardinal_direction %}
+                            <td>{{ item_wind['speed']|int }}kts &nbsp;<span class="direction-text">{{ wind_direction.label }} <span class="direction-arrow{% if wind_direction.arrow in ['↑', '↓', '←', '→'] %} direction-arrow-straight{% endif %}">{{ wind_direction.arrow }}</span></span></td>
                             <td>{{ item_weather['temperature']|int }}°c</td>
                             <td>{{ item_weather['pressure'] }}mb</td>
                             <td>{{ item_wave['probability']|int }}%</td>
@@ -100,7 +104,7 @@
             
     {% else %}
         
-        <!-- If not wave -->
+        <!-- If data cannot be fetched -->
         <p>No data available.</p>
 
     {% endif %}
