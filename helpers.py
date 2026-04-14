@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime, timedelta, timezone
 from functools import wraps
 
 import cloudscraper
@@ -14,6 +15,10 @@ SURFLINE_HEADERS = {
     "Referer": "https://www.surfline.com/",
 }
 
+SURFLINE_SCRAPER = cloudscraper.create_scraper(
+    browser={'browser': 'chrome', 'platform': 'windows', 'mobile': False}
+)
+
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -22,17 +27,115 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-def get_forecast_info(forecast_type, spot_id):
-    # Build the forecast URL by type (wave, wind, weather, conditions) for one spot/day.
-    url = f"https://services.surfline.com/kbyg/spots/forecasts/{forecast_type}?spotId={spot_id}&days=1"
-    headers = SURFLINE_HEADERS
+def format_local_hour(timestamp, utc_offset):
+    # Convert a Surfline timestamp into the spot's local hour.
+    tzinfo = timezone(timedelta(hours=utc_offset or 0))
+    dt = datetime.fromtimestamp(timestamp, tz=tzinfo)
+    hour = dt.strftime('%I %p').lower()
+    return hour[1:] if hour.startswith('0') else hour
 
+def degrees_to_cardinal(degrees):
+    # Turn degree values into a compass label and display arrow.
+    if degrees is None:
+        return {'label': '-', 'arrow': ''}
+
+    directions = [
+        ('N', '↓'), ('NNE', '↙'), ('NE', '↙'), ('ENE', '↙'),
+        ('E', '←'), ('ESE', '↖'), ('SE', '↖'), ('SSE', '↖'),
+        ('S', '↑'), ('SSW', '↗'), ('SW', '↗'), ('WSW', '↗'),
+        ('W', '→'), ('WNW', '↘'), ('NW', '↘'), ('NNW', '↘'),
+    ]
+    index = round(degrees / 22.5) % 16
+    label, arrow = directions[index]
+    return {'label': label, 'arrow': arrow}
+
+def format_height(height):
+    # Keep swell heights clean by dropping trailing .0 values.
+    if height is None:
+        return '-'
+
+    rounded = round(height, 1)
+    if rounded.is_integer():
+        return str(int(rounded))
+    return f'{rounded:.1f}'
+
+def build_swell_cells(swells, limit=2):
+    # Pick the most relevant swells and keep only the primary and secondary entries for display.
+    usable_swells = [
+        swell for swell in (swells or [])
+        if swell and (swell.get('height') or swell.get('period'))
+    ]
+    usable_swells.sort(key=lambda swell: swell.get('impact', 0), reverse=True)
+
+    cells = []
+    for swell in usable_swells[:limit]:
+        cells.append({
+            'height': format_height(swell.get('height')),
+            'period': swell.get('period', 0),
+            'direction': degrees_to_cardinal(swell.get('direction')),
+        })
+
+    while len(cells) < limit:
+        cells.append({
+            'height': '-',
+            'period': '-',
+            'direction': {'label': '-', 'arrow': ''},
+        })
+
+    return cells
+
+def build_forecast_rows(wave, wind, weather, overview_hours, forecast_hours):
+    # Merge separate Surfline responses into render-ready rows for the template.
+    wave_items = (wave or {}).get('data', {}).get('wave', [])
+    wind_items = (wind or {}).get('data', {}).get('wind', [])
+    weather_items = (weather or {}).get('data', {}).get('weather', [])
+    utc_offset = (wave or {}).get('associated', {}).get('utcOffset', 0)
+
+    total_rows = min(len(wave_items), len(wind_items), len(weather_items))
+    if total_rows == 0:
+        return {'overview_rows': [], 'forecast_rows': []}
+
+    def build_row(index):
+        if index >= total_rows:
+            return None
+
+        item_wave = wave_items[index]
+        item_wind = wind_items[index]
+        item_weather = weather_items[index]
+
+        return {
+            'time': format_local_hour(item_wave.get('timestamp'), utc_offset),
+            'surf_min': item_wave.get('surf', {}).get('min', '-'),
+            'surf_max': item_wave.get('surf', {}).get('max', '-'),
+            'surf_plus': bool(item_wave.get('surf', {}).get('plus')),
+            'power': item_wave.get('power'),
+            'swells': build_swell_cells(item_wave.get('swells')),
+            'wind_speed': item_wind.get('speed'),
+            'wind_direction': degrees_to_cardinal(item_wind.get('direction')),
+            'temperature': item_weather.get('temperature'),
+            'pressure': item_weather.get('pressure'),
+            'probability': item_wave.get('probability'),
+        }
+
+    overview_rows = [row for row in (build_row(index) for index in overview_hours) if row]
+    forecast_rows = [row for row in (build_row(index) for index in forecast_hours) if row]
+    return {'overview_rows': overview_rows, 'forecast_rows': forecast_rows}
+
+def get_observation_text(conditions):
+    # Join all condition observations into one text block for the page.
+    items = (conditions or {}).get('data', {}).get('conditions', [])
+    observations = []
+    for item in items:
+        observation = item.get('observation')
+        if observation:
+            observations.append(observation)
+    return ' '.join(observations)
+
+def get_forecast_info(forecast_type, spot_id):
+    # Fetch one Surfline forecast endpoint for a single spot and day.
+    url = f"https://services.surfline.com/kbyg/spots/forecasts/{forecast_type}?spotId={spot_id}&days=1"
     try:
-        # Use cloudscraper to mimic browser requests on protected endpoints.
-        scraper = cloudscraper.create_scraper(
-            browser={'browser': 'chrome', 'platform': 'windows', 'mobile': False}
-        )
-        response = scraper.get(url, headers=headers, timeout=12)
+        response = SURFLINE_SCRAPER.get(url, headers=SURFLINE_HEADERS, timeout=12)
 
         if response.status_code == 200:
             return response.json()
