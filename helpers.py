@@ -27,14 +27,10 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-def get_local_datetime(timestamp, utc_offset):
-    # Convert a Surfline timestamp into the spot's local datetime.
-    tzinfo = timezone(timedelta(hours=utc_offset or 0))
-    return datetime.fromtimestamp(timestamp, tz=tzinfo)
-
 def format_local_hour(timestamp, utc_offset):
-    # Convert a Surfline timestamp into the spot's local hour.
-    dt = get_local_datetime(timestamp, utc_offset)
+    # Convert api timestamp into the spot's local hour.
+    tzinfo = timezone(timedelta(hours=utc_offset or 0))
+    dt = datetime.fromtimestamp(timestamp, tz=tzinfo)
     hour = dt.strftime('%I %p').lower()
     return hour[1:] if hour.startswith('0') else hour
 
@@ -86,7 +82,7 @@ def build_swell_cells(swells, limit=2):
     return cells
 
 def build_forecast_rows(wave, wind, weather, overview_hours, forecast_hours):
-    # Merge separate Surfline responses into render-ready rows for the template.
+    # Merge separate api responses into render-ready rows for the template.
     wave_items = (wave or {}).get('data', {}).get('wave', [])
     wind_items = (wind or {}).get('data', {}).get('wind', [])
     weather_items = (weather or {}).get('data', {}).get('weather', [])
@@ -107,7 +103,8 @@ def build_forecast_rows(wave, wind, weather, overview_hours, forecast_hours):
         if timestamp is None:
             return None
 
-        local_dt = get_local_datetime(timestamp, utc_offset)
+        tzinfo = timezone(timedelta(hours=utc_offset or 0))
+        local_dt = datetime.fromtimestamp(timestamp, tz=tzinfo)
 
         return {
             'hour': local_dt.hour,
@@ -135,7 +132,7 @@ def build_forecast_rows(wave, wind, weather, overview_hours, forecast_hours):
     return {'overview_rows': overview_rows, 'forecast_rows': forecast_rows}
 
 def get_conditions_content(conditions):
-    # Pull a concise headline and the longer observations for the page.
+    # Pull headline and observations for the forecast page.
     items = (conditions or {}).get('data', {}).get('conditions', [])
     headlines = []
     observations = []
@@ -152,7 +149,7 @@ def get_conditions_content(conditions):
     }
 
 def get_forecast_info(forecast_type, spot_id):
-    # Fetch one Surfline forecast endpoint for a single spot and day.
+    # Fetch forecast endpoint using headers.
     url = f"https://services.surfline.com/kbyg/spots/forecasts/{forecast_type}?spotId={spot_id}&days=1"
     try:
         response = SURFLINE_SCRAPER.get(url, headers=SURFLINE_HEADERS, timeout=12)
