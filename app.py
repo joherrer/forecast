@@ -20,7 +20,7 @@ app = Flask(__name__)
 # Set up secret key.
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 if not app.config['SECRET_KEY']:
-    raise RuntimeError('SECRET_KEY is required. Set it in your environment or .env file.')
+    raise RuntimeError('SECRET_KEY is required.')
 
 # Configure server-side sessions.
 app.config['SESSION_TYPE'] = 'filesystem'
