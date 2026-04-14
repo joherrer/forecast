@@ -35,19 +35,16 @@ def format_local_hour(timestamp, utc_offset):
     return hour[1:] if hour.startswith('0') else hour
 
 def degrees_to_cardinal(degrees):
-    # Turn degree values into a compass label and display arrow.
+    # Turn degree values into a compass label and one rotation value for a single arrow icon.
     if degrees is None:
-        return {'label': '-', 'arrow': ''}
+        return {'label': '-', 'rotation': None}
 
-    directions = [
-        ('N', '↓'), ('NNE', '↙'), ('NE', '↙'), ('ENE', '↙'),
-        ('E', '←'), ('ESE', '↖'), ('SE', '↖'), ('SSE', '↖'),
-        ('S', '↑'), ('SSW', '↗'), ('SW', '↗'), ('WSW', '↗'),
-        ('W', '→'), ('WNW', '↘'), ('NW', '↘'), ('NNW', '↘'),
-    ]
+    directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE',
+                  'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW']
     index = round(degrees / 22.5) % 16
-    label, arrow = directions[index]
-    return {'label': label, 'arrow': arrow}
+    label = directions[index]
+    rotation = (index * 22.5 + 180) % 360
+    return {'label': label, 'rotation': rotation}
 
 def format_height(height):
     # Keep swell heights clean by dropping trailing .0 values.
@@ -76,11 +73,11 @@ def build_swell_cells(swells, limit=2):
         })
 
     while len(cells) < limit:
-        cells.append({
-            'height': '-',
-            'period': '-',
-            'direction': {'label': '-', 'arrow': ''},
-        })
+            cells.append({
+                'height': '-',
+                'period': '-',
+                'direction': {'label': '-', 'rotation': None},
+            })
 
     return cells
 
