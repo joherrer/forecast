@@ -9,7 +9,7 @@ from flask_wtf.csrf import CSRFProtect
 from sqlalchemy.orm import relationship
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from helpers import get_forecast_info, login_required
+from helpers import build_forecast_rows, get_conditions_content, get_forecast_info, login_required
 
 # Load environment variables.
 load_dotenv()
@@ -68,22 +68,6 @@ def after_request(response):
     response.headers['Pragma'] = 'no-cache'
     return response
 
-@app.template_filter('datetime_hour')
-def timestamp_to_datetime_hour(timestamp):
-    dt = datetime.fromtimestamp(timestamp)
-    hour = dt.strftime('%I %p').lower()
-    if hour.startswith('0'):
-        hour = hour[1:]
-    return hour
-
-@app.template_filter('cardinal_direction')
-def degrees_to_cardinal(degrees):
-    directions = ['N ↓', 'NNE ↙', 'NE ↙', 'ENE ↙', 'E ←', 'ESE ↖', 'SE ↖', 'SSE ↖',
-                  'S ↑', 'SSW ↗', 'SW ↗', 'WSW ↗', 'W →', 'WNW ↘', 'NW ↘', 'NNW ↘']
-    index = round(degrees / 22.5) % 16
-    label, arrow = directions[index].split()
-    return {'label': label, 'arrow': arrow}
-
 # Spot names mapped to Surfline spot IDs.
 spots = {
     'The Spit': '5d81295f9f26b100014e2eee',
@@ -103,6 +87,8 @@ spots = {
     'Snapper Rocks': '5842041f4e65fad6a7708be5',
     'Duranbah': '5842041f4e65fad6a7708c11',
 }
+
+spot_slugs = {spot_name.lower().replace(' ', '_'): spot_name for spot_name in spots}
 
 @app.route('/', methods=['GET'])
 def index():
@@ -180,10 +166,8 @@ def spots_route():
 
 @app.route('/spots/<spot_route>', methods=['GET'])
 def spot_forecast(spot_route):
-
-    # Convert URL value to match dictionary keys.
-    spot_name = spot_route.replace('_', ' ').title()
-    spot_id = spots.get(spot_name)
+    spot_name = spot_slugs.get(spot_route.lower())
+    spot_id = spots.get(spot_name) if spot_name else None
     if not spot_id:
         flash('Spot not found', 'warning')
         return redirect(url_for('spots_route'))
@@ -192,16 +176,24 @@ def spot_forecast(spot_route):
     wind = get_forecast_info('wind', spot_id)
     weather = get_forecast_info('weather', spot_id)
     conditions = get_forecast_info('conditions', spot_id)
+    conditions_content = get_conditions_content(conditions)
+    rows = build_forecast_rows(
+        wave,
+        wind,
+        weather,
+        overview_hours=[6, 12, 18],
+        forecast_hours=[6, 9, 12, 15, 18],
+    )
     current_date = datetime.now().strftime('%a, %d %B %Y')
 
     return render_template(
         'forecast.html',
         spot_name=spot_name,
-        wave=wave,
-        wind=wind,
-        weather=weather,
-        conditions=conditions,
-        current_date=current_date
+        current_date=current_date,
+        headline=conditions_content['headline'],
+        observation_text=conditions_content['observation_text'],
+        overview_rows=rows['overview_rows'],
+        forecast_rows=rows['forecast_rows']
     )
 
 @app.route('/favorites', methods=['GET', 'POST'])
