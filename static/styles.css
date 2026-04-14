@@ -75,6 +75,29 @@ table tr td, table th {
     border-color: black;
 }
 
+.direction-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15em;
+    white-space: nowrap;
+}
+
+.direction-arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1em;
+    font-family: "DejaVu Sans", Arial, sans-serif;
+    font-size: 0.8em;
+    line-height: 1;
+    font-variant-emoji: text;
+    flex: 0 0 1em;
+}
+
+.direction-arrow-straight {
+    transform: scale(1.15);
+}
+
 /* Spots page style */
 .spots-title {
     font-family: "Arsenal", sans-serif;
