@@ -5,26 +5,46 @@
 {% endblock %}
 
 {% block header %}{% endblock %}{% block favorites %}{% endblock %}
+{% block body_class %}page-spots{% endblock %}
 
 {% block main %}
-
-    <!-- Row with column title  and row with columns spots -->
-    <div class="row spots-page-body justify-content-center mb-2 pb-2 mb-xl-0 pb-xl-0">
-
-        <!-- Column spots title -->
-        <div class="row spots-title text-center mb-4 pb-4 mb-xxl-5">
-            <h2 class="spots-title">Spots</h2>
+    <section class="hero-panel hero-simple">
+        <div class="hero-copy">
+            <p class="eyebrow">Explore the coastline</p>
+            <h1 class="section-title spots-title">Find the best surf conditions.</h1>
+            <p class="hero-description">Search the full list of spots on the Gold Coast and jump straight into the daily forecast.</p>
         </div>
-
-        <!-- Row with columns list of spots -->
-        <div class="row spots-list text-center">
-            {% for spot in spots %}
-                <a class="col-12 col-md-6 col-xl-3 items-spots-list text-dark text-decoration-none" href="{{ url_for('spot_forecast', spot_route=spot|lower|replace(' ', '_')) }}" style="white-space: nowrap;">{{ spot }}</a>
-            {% endfor %}
+        <div class="search-panel">
+            <label class="form-label search-label" for="spot-search">Search spots</label>
+            <input id="spot-search" class="form-control app-form-control" type="search" placeholder="Try Surfers Paradise, Main Beach, Broadbeach..." data-spot-filter>
         </div>
+    </section>
 
-    </div>
+    <section class="spot-card-grid" data-spot-results>
+        {% for spot, spot_data in spots.items() %}
+            <a class="spot-card-link" href="{{ url_for('spot_forecast', spot_route=spot|lower|replace(' ', '_')) }}" data-spot-name="{{ spot|lower }}">
+                <article class="spot-card">
+                    <div class="spot-card-media">
+                        <img
+                            src="{{ url_for('static', filename=spot_data['image']) }}"
+                            alt="{{ spot }} surf spot"
+                            class="spot-card-image"
+                        >
+                    </div>
+                    <div class="spot-card-body">
+                        <p class="spot-card-label">Spot</p>
+                        <h2>{{ spot }}</h2>
+                        <span>Open forecast</span>
+                    </div>
+                </article>
+            </a>
+        {% endfor %}
+    </section>
+
+    <p class="empty-search-state d-none" data-empty-spots>No spots match that search yet.</p>
     
 {% endblock %}
 
-{% block footer %}{% endblock %}
+{% block data %}
+    <div class="footer-spacer" aria-hidden="true"></div>
+{% endblock %}

@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta name="theme-color" content="#ffffff">
+        <meta name="theme-color" content="#0b1320">
 
         <!-- Bootstrap CSS and icons -->
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
@@ -33,53 +33,71 @@
         <!-- Google Fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Arsenal:ital,wght@0,400;0,700;1,400;1,700&family=Satisfy&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 
         <title>Gold Coast Forecast | {% block title %}{% endblock %}</title>
     </head>
 
-    <body>
-        
-        <header>
-            <div class="header m-4 py-3 mb-0 mb-sm-4 px-sm-4">
-                <!-- Navigation bar header -->
-                <nav class="navbar navbar-header navbar-expand-lg justify-content-end justify-content-lg-between">
-                    <!-- Logo navbar within container -->
-                    <div class="container-fluid d-flex justify-content-end justify-content-lg-between">
-                        <a class="navbar-brand nav-logo m-0" href="{{ url_for('index') }}">Gold Coast Surf Forecast</a>
+    <body class="{% block body_class %}{% endblock %}">
+        <div class="site-backdrop" aria-hidden="true"></div>
+
+        <header class="app-header">
+            <nav class="navbar navbar-expand-lg app-navbar">
+                <div class="container-fluid app-header-shell align-items-center">
+                    <a class="navbar-brand nav-logo m-0" href="{{ url_for('index') }}">
+                        <span class="nav-logo-mark">Gold Coast</span>
+                        <span class="nav-logo-text">Surf Forecast</span>
+                    </a>
+
+                    <button class="navbar-toggler app-navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#appNavigation" aria-controls="appNavigation" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+
+                    <div class="collapse navbar-collapse justify-content-lg-end" id="appNavigation">
+                        <div class="app-nav-actions ms-lg-auto">
+                            {% block header %}
+                                <div class="btn-group">
+                                    <button class="btn app-select-button dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        Surf spots
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end app-dropdown-menu">
+                                        <li><a class="dropdown-item" href="{{ url_for('spot_forecast', spot_route='snapper_rocks') }}">Snapper Rocks</a></li>
+                                        <li><a class="dropdown-item" href="{{ url_for('spot_forecast', spot_route='duranbah') }}">Duranbah</a></li>
+                                        <li><a class="dropdown-item" href="{{ url_for('spot_forecast', spot_route='burleigh_heads') }}">Burleigh Heads</a></li>
+                                        <li><a class="dropdown-item" href="{{ url_for('spot_forecast', spot_route='kirra') }}">Kirra</a></li>
+                                        <li><a class="dropdown-item" href="{{ url_for('spots_route') }}">Browse all</a></li>
+                                    </ul>
+                                </div>
+                            {% endblock %}
+
+                            {% block favorites %}
+                                {% if session.get('user_id') %}
+                                    <a class="app-nav-link" href="{{ url_for('favorites') }}">Favorites</a>
+                                {% endif %}
+                            {% endblock %}
+
+                            {% block session %}
+                                {% if session.get('user_id') %}
+                                    <form action="{{ url_for('logout') }}" method="post">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button class="app-nav-link app-nav-button" type="submit">Log out</button>
+                                    </form>
+                                {% else %}
+                                    <a class="app-nav-link" href="{{ url_for('login') }}">Log in</a>
+                                    <a class="btn app-primary-button app-primary-button-sm" href="{{ url_for('register') }}">Create account</a>
+                                {% endif %}
+                            {% endblock %}
+                        </div>
                     </div>
-                    {% block header %}
-                        <!-- Dropdown button Spots with list of spots -->
-                        <div class="btn-group dropstart">
-                            <button class="btn btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" data-bs-offset="10,20">
-                                Select surf spot
-                            </button>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{{ url_for('spot_forecast', spot_route='kirra') }}">Kirra</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('spot_forecast', spot_route='snapper_rocks') }}">Snapper Rocks</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('spot_forecast', spot_route='duranbah') }}">Duranbah</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('spot_forecast', spot_route='burleigh_heads') }}">Burleigh Heads</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('spots_route') }}">Others</a></li>
-                            </ul>
-                        </div>
-                    {% endblock %}
-                </nav>
+                </div>
+            </nav>
 
-                {% block favorites %}
-                    <!-- If user logged in favorites link -->
-                    {% if session.get('user_id') %}
-                        <div class="container-fluid favorites d-flex justify-content-end pe-3">
-                            <a class="favorites-link text-dark text-decoration-none" href="{{ url_for('favorites') }}">Favorites</a>
-                        </div>
-                    {% endif %}
-                {% endblock %}
-
-                <!-- Flash messages -->
-                <div class="container pt-2 ps-5 pe-5">
+            <div class="container-fluid app-header-shell">
+                <div class="app-flash-stack">
                     {% with messages = get_flashed_messages(with_categories=true) %}
                     {% if messages %}
                     {% for category, message in messages %}
-                        <div class="alert alert-{{ category }} d-flex alert-dismissible fade show align-items-center justify-content-center" role="alert">
+                        <div class="alert alert-{{ category }} d-flex alert-dismissible fade show align-items-center" role="alert">
                             {% if category == 'success' %}
                                 <svg class="bi flex-shrink-0 me-2 text-success" width="18" height="18" role="img" aria-label="Success:" style="fill: currentColor;">
                                     <use xlink:href="#check-circle-fill"/>
@@ -89,7 +107,7 @@
                                     <use xlink:href="#exclamation-triangle-fill"/>
                                 </svg>
                             {% endif %}
-                            {{ message }}
+                            <span>{{ message }}</span>
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
                     {% endfor %}
@@ -99,37 +117,20 @@
             </div>
         </header>
 
-        <main>
-            <!-- Main content within container -->
-            <div class="container container-main p-4">
+        <main class="app-main">
+            <div class="container app-shell">
                 {% block main %}{% endblock %}
             </div>
         </main>
 
-        <footer>
+        <footer class="app-footer">
             {% block footer %}
-                {% block session %}
-                    <!-- If user logged in  -->
-                    {% if session.get('user_id') %}
-                        <!-- Logout link -->
-                        <form class="logout fixed-bottom m-2 m-sm-4 ps-2 pb-4" action="{{ url_for('logout') }}" method="post">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <button class="logout-link text-decoration-none text-dark ps-4" type="submit">Log out</button>
-                        </form>
-                    {% else %}
-                        <!-- Register and login links -->
-                        <ul class="login-register fixed-bottom m-2 m-sm-4 pb-4">
-                            <span><a class="register-link text-decoration-none text-dark ps-sm-1" href="{{ url_for('register') }}">Register</a></span>
-                            |
-                            <span><a class="login-link text-decoration-none text-dark" href="{{ url_for('login') }}">Log in</a></span>
-                        </ul>
-                    {% endif %}
-                {% endblock %}
                 {% block data %}
-                    <!-- Footer content here -->
-                    <p class="footer small text-center text-muted m-4 pb-4">
-                        Data provided by <a href="https://www.surfline.com" class="text-dark text-decoration-none">Surfline</a>
-                    </p>
+                    <div class="container app-shell">
+                        <p class="footer-note small mb-0">
+                            Data provided by <a href="https://www.surfline.com" class="footer-link">Surfline</a>
+                        </p>
+                    </div>
                 {% endblock %}
             {% endblock %}
         </footer>

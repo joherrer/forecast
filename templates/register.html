@@ -5,27 +5,45 @@
 {% endblock %}
 
 {% block header %}{% endblock %}
+{% block body_class %}page-auth{% endblock %}
 
 {% block main %}
+    <section class="auth-layout">
+        <div class="hero-panel auth-panel">
+            <div class="hero-copy">
+                <p class="eyebrow">Create your setup</p>
+                <h1 class="hero-title auth-title">Build a personal dashboard for your regular surf spots.</h1>
+                <p class="hero-description">Create an account to save your favorite breaks, access forecasts faster, and personalize your surf experience.</p>
+            </div>
 
-    <!-- Container register -->
-    <div class="container text-center pt-4">
-        <!-- Form register (username, password, confirmation and button) -->
-        <form action="{{ url_for('register') }}" method="post">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <div class="mb-3">
-                <input autocomplete="off" autofocus class="form-control mx-auto w-auto" name="username" placeholder="Username" type="text" required>
+            <div class="content-card auth-card">
+                <p class="section-kicker">New account</p>
+                <h2 class="section-title section-title-sm">Register</h2>
+
+                <form action="{{ url_for('register') }}" method="post" class="stacked-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div>
+                        <label class="form-label" for="register-username">Username</label>
+                        <input id="register-username" autocomplete="off" autofocus class="form-control app-form-control" name="username" placeholder="Choose a username" type="text" required>
+                    </div>
+                    <div>
+                        <label class="form-label" for="register-password">Password</label>
+                        <input id="register-password" class="form-control app-form-control" name="password" placeholder="Create a password" type="password" required>
+                    </div>
+                    <div>
+                        <label class="form-label" for="register-confirmation">Confirm password</label>
+                        <input id="register-confirmation" class="form-control app-form-control" name="confirmation" placeholder="Re-enter your password" type="password" required>
+                    </div>
+                    <button class="btn app-primary-button" type="submit">Create account</button>
+                </form>
+
+                <p class="auth-meta mb-0">Already registered? <a href="{{ url_for('login') }}">Log in</a>.</p>
             </div>
-            <div class="mb-3">
-                <input class="form-control mx-auto w-auto" name="password" placeholder="Password" type="password" required>
-            </div>
-            <div class="mb-3">
-                <input class="form-control mx-auto w-auto" name="confirmation" placeholder="Password (confirmation)" type="password" required>
-            </div>
-            <button class="btn btn-dark" type="submit">Register</button>
-        </form>
-    </div>
+        </div>
+    </section>
     
 {% endblock %}
 
-{% block data %}{% endblock %}
+{% block data %}
+    <div class="footer-spacer" aria-hidden="true"></div>
+{% endblock %}

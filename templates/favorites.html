@@ -5,63 +5,79 @@
 {% endblock %}
 
 {% block header %}{% endblock %}{% block favorites %}{% endblock %}
+{% block body_class %}page-favorites{% endblock %}
 
 {% block main %}
-
-    <div class="row justify-content-center align-items-center">
-
-        <!-- Favorites title -->
-        <div class="row favorites-title text-center">
-            <p>Your favorite spots</p>
+    <section class="hero-panel hero-simple">
+        <div class="hero-copy">
+            <p class="eyebrow">Your shortcuts</p>
+            <h1 class="section-title favorites-title">Favorite spots</h1>
+            <p class="hero-description">Keep your regular breaks in one place and manage them without leaving the page.</p>
         </div>
+    </section>
 
-        <!-- Row select spot -->
-        <div class="row select-spot text-center mb-4 pb-4 mt-4 pt-4">
-            <!-- Form add spot -->
-            <div class="col-6 d-flex justify-content-end add-spot">
-                <form action="{{ url_for('favorites') }}" method="post">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <input type="hidden" name="action" value="add">
-                    <!-- Select spot list -->
-                    <select class="form-add mb-2 me-0 mb-md-0 me-md-2" name="spot">
-                        <option selected disabled value="">Select spot</option>
-                        {% for spot in spots %}
-                            <option value="{{ spot }}">{{ spot }}</option>
-                        {% endfor %}
-                    </select>
-                    <!-- Button add favorites -->
-                    <button class="btn btn-dark" type="submit">Add favorites</button>
-                </form>
-            </div>
+    <section class="form-card-grid">
+        <article class="content-card">
+            <p class="section-kicker">Add a spot</p>
+            <form action="{{ url_for('favorites') }}" method="post" class="stacked-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="action" value="add">
+                <select id="favorite-add" class="form-select app-form-control" name="spot" required>
+                    <option selected disabled value="">Select spot</option>
+                    {% for spot in spots %}
+                        <option value="{{ spot }}">{{ spot }}</option>
+                    {% endfor %}
+                </select>
+                <button class="btn app-primary-button" type="submit">Add to favorites</button>
+            </form>
+        </article>
 
-            <!-- Form remove spot -->
-            <div class="col-6 remove-spot d-flex justify-content-start">
-                <form action="{{ url_for('favorites') }}" method="post">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <input type="hidden" name="action" value="remove">
-                    <!-- Select spot list -->
-                    <select class="form-remove mb-2 me-0 mb-md-0 me-md-2" name="spot">
-                        <option selected disabled value="">Select spot</option>
-                        {% for spot in spots_fav %}
-                            <option value="{{ spot }}">{{ spot }}</option>
-                        {% endfor %}
-                    </select>
-                    <!-- Button remove favorites -->
-                    <button class="btn btn-dark" type="submit">Remove favorites</button>
-                </form>
-            </div>
+        <article class="content-card">
+            <p class="section-kicker">Remove a spot</p>
+            <form action="{{ url_for('favorites') }}" method="post" class="stacked-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="action" value="remove">
+                <select id="favorite-remove" class="form-select app-form-control" name="spot" {% if not spots_fav %}disabled{% endif %} required>
+                    <option selected disabled value="">{% if spots_fav %}Select spot{% else %}No favorites yet{% endif %}</option>
+                    {% for spot in spots_fav %}
+                        <option value="{{ spot }}">{{ spot }}</option>
+                    {% endfor %}
+                </select>
+                <button class="btn app-primary-button" type="submit" {% if not spots_fav %}disabled{% endif %}>Remove from favorites</button>
+            </form>
+        </article>
+    </section>
 
-        </div>
-
-        <!-- Already added surf spots -->
-        <div class="row favorites-spots-list text-center mt-4 mb-2 pb-2 pb-sm-0 mb-sm-0">
+    {% if spots_fav %}
+        <section class="spot-card-grid favorites-grid">
             {% for spot in spots_fav %}
-                <a class="col-12 col-sm-6 col-xl-3 items-favorites-spots-list text-dark text-decoration-none" href="{{ url_for('spot_forecast', spot_route=spot|lower|replace(' ', '_')) }}" style="white-space: nowrap;">{{ spot }}</a>
+                <a class="spot-card-link" href="{{ url_for('spot_forecast', spot_route=spot|lower|replace(' ', '_')) }}">
+                    <article class="spot-card spot-card-favorite">
+                        <div class="spot-card-media">
+                            <img
+                                src="{{ url_for('static', filename=spots[spot]['image']) }}"
+                                alt="{{ spot }} surf spot"
+                                class="spot-card-image"
+                            >
+                        </div>
+                        <div class="spot-card-body">
+                            <p class="spot-card-label">Saved spot</p>
+                            <h2>{{ spot }}</h2>
+                            <span>Open forecast</span>
+                        </div>
+                    </article>
+                </a>
             {% endfor %}
-        </div>
-
-    </div>
+        </section>
+    {% else %}
+        <section class="content-card empty-state-card">
+            <h2>No favorites saved yet</h2>
+            <p class="mb-0">Add a few regular spots to build your own quick-access forecast list.</p>
+        </section>
+    {% endif %}
     
 {% endblock %}
 
-{% block footer %}{% endblock %}
+{% block data %}
+    <div class="footer-spacer" aria-hidden="true"></div>
+{% endblock %}

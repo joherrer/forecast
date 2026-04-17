@@ -5,31 +5,51 @@
 {% endblock %}
 
 {% block header %}{% endblock %}
+{% block body_class %}page-auth{% endblock %}
 
 {% block main %}
+    <section class="auth-layout">
+        <div class="hero-panel auth-panel">
+            <div class="hero-copy">
+                <p class="eyebrow">Welcome back</p>
+                <h1 class="hero-title auth-title">Check your favorite spots faster.</h1>
+                <p class="hero-description">Save your favorite breaks, access daily forecasts, and keep your regular surf spots all in one place.</p>
+            </div>
 
-    {% if error %}
-        <div class="alert alert-warning d-flex alert-dismissible fade show align-items-center justify-content-center">
-            {{ error }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <div class="content-card auth-card">
+                <p class="section-kicker">Account access</p>
+                <h2 class="section-title section-title-sm">Log in</h2>
+
+                {% if error %}
+                    <div class="alert alert-warning d-flex alert-dismissible fade show align-items-center mb-4" role="alert">
+                        <svg class="bi flex-shrink-0 me-2 text-warning" width="18" height="18" role="img" aria-label="Warning:" style="fill: currentColor;">
+                            <use xlink:href="#exclamation-triangle-fill"/>
+                        </svg>
+                        <span>{{ error }}</span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endif %}
+
+                <form action="{{ url_for('login') }}" method="post" class="stacked-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div>
+                        <label class="form-label" for="login-username">Username</label>
+                        <input id="login-username" autocomplete="off" autofocus class="form-control app-form-control" name="username" placeholder="Enter your username" type="text" required>
+                    </div>
+                    <div>
+                        <label class="form-label" for="login-password">Password</label>
+                        <input id="login-password" class="form-control app-form-control" name="password" placeholder="Enter your password" type="password" required>
+                    </div>
+                    <button class="btn app-primary-button" type="submit">Log in</button>
+                </form>
+
+                <p class="auth-meta mb-0">New here? <a href="{{ url_for('register') }}">Create an account</a>.</p>
+            </div>
         </div>
-    {% endif %}
-
-    <!-- Container login -->
-    <div class="container text-center pt-4">
-        <!-- Form login (username, password and button) -->
-        <form action="{{ url_for('login') }}" method="post">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <div class="mb-3">
-                <input autocomplete="off" autofocus class="form-control mx-auto w-auto" name="username" placeholder="Username" type="text" required>
-            </div>
-            <div class="mb-3">
-                <input class="form-control mx-auto w-auto" name="password" placeholder="Password" type="password" required>
-            </div>
-            <button class="btn btn-dark" type="submit">Log In</button>
-        </form> 
-    </div>
+    </section>
     
 {% endblock %}
 
-{% block data %}{% endblock %}
+{% block data %}
+    <div class="footer-spacer" aria-hidden="true"></div>
+{% endblock %}

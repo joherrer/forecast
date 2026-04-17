@@ -3,7 +3,7 @@
 ![Flask](https://img.shields.io/badge/Flask-%E2%9C%94-green)
 ![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-%E2%9C%94-green)
 
-![Homepage Screenshot](static/homepage.jpeg)
+![Homepage Screenshot](static/images/homepage/homepage.jpeg)
 
 ## 🌊 Description
 Gold Coast Surf Forecast is a web application built using Python and Flask to offer real-time updates on surf conditions across all the prominent surf spots along the Gold Coast. This platform is designed to provide surfers with accurate and timely surf forecasts to enhance their surfing experience.

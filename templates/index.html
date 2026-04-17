@@ -4,6 +4,66 @@
     Homepage
 {% endblock %}
 
-{% block main %}{% endblock %}
+{% block body_class %}page-home{% endblock %}
 
-{% block data %}{% endblock %}
+{% block main %}
+    <section class="hero-panel hero-home">
+        <div class="hero-copy">
+            <p class="eyebrow">Gold Coast surf forecast</p>
+            <h1 class="hero-title">A cleaner way to check the coast before paddling out.</h1>
+            <p class="hero-description">
+                Browse surf forecasts and keep your favorite breaks close so you can check conditions and plan your next session.
+            </p>
+            <div class="hero-actions">
+                <a class="btn app-primary-button" href="{{ url_for('spots_route') }}">Browse all spots</a>
+                <a class="btn app-secondary-button" href="{{ url_for('spot_forecast', spot_route='kirra') }}">View Kirra forecast</a>
+            </div>
+        </div>
+
+        <div class="hero-aside">
+            <div class="feature-card spotlight-card">
+                <p class="spotlight-label">Popular checks</p>
+                <div class="quick-spot-grid">
+                    <a href="{{ url_for('spot_forecast', spot_route='snapper_rocks') }}">Snapper Rocks</a>
+                    <a href="{{ url_for('spot_forecast', spot_route='duranbah') }}">Duranbah</a>
+                    <a href="{{ url_for('spot_forecast', spot_route='burleigh_heads') }}">Burleigh Heads</a>
+                    <a href="{{ url_for('spot_forecast', spot_route='kirra') }}">Kirra</a>
+                </div>
+            </div>
+
+            <div id="homepageCarousel" class="carousel slide feature-card homepage-carousel" data-bs-ride="carousel" data-bs-interval="6500">
+                <div class="carousel-indicators homepage-carousel-indicators">
+                    <button type="button" data-bs-target="#homepageCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+                    <button type="button" data-bs-target="#homepageCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+                    <button type="button" data-bs-target="#homepageCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+                </div>
+
+                <div class="carousel-inner homepage-carousel-inner">
+                    <div class="carousel-item active">
+                        <img src="{{ url_for('static', filename='images/carousel/carousel-1.jpg') }}" class="d-block w-100 homepage-carousel-image" alt="Gold Coast surf break">
+                    </div>
+                    <div class="carousel-item">
+                        <img src="{{ url_for('static', filename='images/carousel/carousel-2.webp') }}" class="d-block w-100 homepage-carousel-image" alt="Gold Coast lineup">
+                    </div>
+                    <div class="carousel-item">
+                        <img src="{{ url_for('static', filename='images/carousel/carousel-3.jpg') }}" class="d-block w-100 homepage-carousel-image" alt="Surfer heading into the water">
+                    </div>
+                </div>
+
+                <button class="carousel-control-prev homepage-carousel-control" type="button" data-bs-target="#homepageCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next homepage-carousel-control" type="button" data-bs-target="#homepageCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+{% endblock %}
+
+{% block data %}
+    <div class="footer-spacer" aria-hidden="true"></div>
+{% endblock %}
