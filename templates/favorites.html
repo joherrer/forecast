@@ -19,7 +19,7 @@
     <section class="form-card-grid">
         <article class="content-card">
             <p class="section-kicker">Add a spot</p>
-            <form action="{{ url_for('favorites') }}" method="post" class="stacked-form">
+            <form action="{{ url_for('routes.favorites') }}" method="post" class="stacked-form">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="action" value="add">
                 <select id="favorite-add" class="form-select app-form-control" name="spot" required>
@@ -34,7 +34,7 @@
 
         <article class="content-card">
             <p class="section-kicker">Remove a spot</p>
-            <form action="{{ url_for('favorites') }}" method="post" class="stacked-form">
+            <form action="{{ url_for('routes.favorites') }}" method="post" class="stacked-form">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="action" value="remove">
                 <select id="favorite-remove" class="form-select app-form-control" name="spot" {% if not spots_fav %}disabled{% endif %} required>
@@ -51,7 +51,7 @@
     {% if spots_fav %}
         <section class="spot-card-grid favorites-grid">
             {% for spot in spots_fav %}
-                <a class="spot-card-link" href="{{ url_for('spot_forecast', spot_route=spot|lower|replace(' ', '_')) }}">
+                <a class="spot-card-link" href="{{ url_for('routes.spot_forecast', spot_route=spot|lower|replace(' ', '_')) }}">
                     <article class="spot-card spot-card-favorite">
                         <div class="spot-card-media">
                             <img

@@ -44,7 +44,7 @@
         <header class="app-header">
             <nav class="navbar navbar-expand-lg app-navbar">
                 <div class="container-fluid app-header-shell align-items-center">
-                    <a class="navbar-brand nav-logo m-0" href="{{ url_for('index') }}">
+                    <a class="navbar-brand nav-logo m-0" href="{{ url_for('routes.index') }}">
                         <span class="nav-logo-mark">Gold Coast</span>
                         <span class="nav-logo-text">Surf Forecast</span>
                     </a>
@@ -61,30 +61,30 @@
                                         Surf spots
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end app-dropdown-menu">
-                                        <li><a class="dropdown-item" href="{{ url_for('spot_forecast', spot_route='snapper_rocks') }}">Snapper Rocks</a></li>
-                                        <li><a class="dropdown-item" href="{{ url_for('spot_forecast', spot_route='duranbah') }}">Duranbah</a></li>
-                                        <li><a class="dropdown-item" href="{{ url_for('spot_forecast', spot_route='burleigh_heads') }}">Burleigh Heads</a></li>
-                                        <li><a class="dropdown-item" href="{{ url_for('spot_forecast', spot_route='kirra') }}">Kirra</a></li>
-                                        <li><a class="dropdown-item" href="{{ url_for('spots_route') }}">Browse all</a></li>
+                                        <li><a class="dropdown-item" href="{{ url_for('routes.spot_forecast', spot_route='snapper_rocks') }}">Snapper Rocks</a></li>
+                                        <li><a class="dropdown-item" href="{{ url_for('routes.spot_forecast', spot_route='duranbah') }}">Duranbah</a></li>
+                                        <li><a class="dropdown-item" href="{{ url_for('routes.spot_forecast', spot_route='burleigh_heads') }}">Burleigh Heads</a></li>
+                                        <li><a class="dropdown-item" href="{{ url_for('routes.spot_forecast', spot_route='kirra') }}">Kirra</a></li>
+                                        <li><a class="dropdown-item" href="{{ url_for('routes.spots_route') }}">Browse all</a></li>
                                     </ul>
                                 </div>
                             {% endblock %}
 
                             {% block favorites %}
                                 {% if session.get('user_id') %}
-                                    <a class="app-nav-link" href="{{ url_for('favorites') }}">Favorites</a>
+                                    <a class="app-nav-link" href="{{ url_for('routes.favorites') }}">Favorites</a>
                                 {% endif %}
                             {% endblock %}
 
                             {% block session %}
                                 {% if session.get('user_id') %}
-                                    <form action="{{ url_for('logout') }}" method="post">
+                                    <form action="{{ url_for('routes.logout') }}" method="post">
                                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                         <button class="app-nav-link app-nav-button" type="submit">Log out</button>
                                     </form>
                                 {% else %}
-                                    <a class="app-nav-link" href="{{ url_for('login') }}">Log in</a>
-                                    <a class="btn app-primary-button app-primary-button-sm" href="{{ url_for('register') }}">Create account</a>
+                                    <a class="app-nav-link" href="{{ url_for('routes.login') }}">Log in</a>
+                                    <a class="btn app-primary-button app-primary-button-sm" href="{{ url_for('routes.register') }}">Create account</a>
                                 {% endif %}
                             {% endblock %}
                         </div>

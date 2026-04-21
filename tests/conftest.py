@@ -1,8 +1,11 @@
-import importlib
 import os
 from pathlib import Path
 
 import pytest
+
+from app import create_app
+from app.extensions import db
+from app.models import Favorites, Users
 
 
 os.environ.setdefault("SECRET_KEY", "test-secret-key")
@@ -12,26 +15,26 @@ os.environ.setdefault(
 )
 os.environ.setdefault("SESSION_COOKIE_SECURE", "0")
 
-app_module = importlib.import_module("app")
-
 
 @pytest.fixture
 def app():
-    app_module.app.config.update(
-        TESTING=True,
-        WTF_CSRF_ENABLED=False,
+    app = create_app(
+        {
+            "TESTING": True,
+            "WTF_CSRF_ENABLED": False,
+        }
     )
 
-    with app_module.app.app_context():
-        app_module.db.session.remove()
-        app_module.db.drop_all()
-        app_module.db.create_all()
+    with app.app_context():
+        db.session.remove()
+        db.drop_all()
+        db.create_all()
 
-    yield app_module.app
+    yield app
 
-    with app_module.app.app_context():
-        app_module.db.session.remove()
-        app_module.db.drop_all()
+    with app.app_context():
+        db.session.remove()
+        db.drop_all()
 
 
 @pytest.fixture
@@ -40,13 +43,13 @@ def client(app):
 
 
 @pytest.fixture
-def db():
-    return app_module.db
+def models():
+    return {
+        "Users": Users,
+        "Favorites": Favorites,
+    }
 
 
 @pytest.fixture
-def models():
-    return {
-        "Users": app_module.Users,
-        "Favorites": app_module.Favorites,
-    }
+def database(app):
+    return db

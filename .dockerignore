@@ -1,5 +1,6 @@
 .git
 .gitignore
+.env
 __pycache__/
 *.pyc
 *.pyo
@@ -8,5 +9,6 @@ __pycache__/
 venv/
 .venv/
 forecast.db
+*.db
 *.log
 .DS_Store

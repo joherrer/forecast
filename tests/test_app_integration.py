@@ -108,7 +108,7 @@ def _mock_conditions():
     }
 
 
-def test_register_creates_user_and_logs_them_in(app, client, db, models):
+def test_register_creates_user_and_logs_them_in(app, client, database, models):
     response = client.post(
         "/register",
         data={
@@ -125,7 +125,7 @@ def test_register_creates_user_and_logs_them_in(app, client, db, models):
     with client.session_transaction() as session:
         assert session["user_id"] is not None
 
-    with app.app_context(), db.session.no_autoflush:
+    with app.app_context(), database.session.no_autoflush:
         user = models["Users"].query.filter_by(username="grom").first()
 
     assert user is not None
@@ -139,11 +139,11 @@ def test_favorites_requires_login(client):
     assert response.headers["Location"].endswith("/login")
 
 
-def test_logged_in_user_can_add_favorite(app, client, db, models):
+def test_logged_in_user_can_add_favorite(app, client, database, models):
     with app.app_context():
         user = models["Users"](username="regularfooter", hash="hashed-password")
-        db.session.add(user)
-        db.session.commit()
+        database.session.add(user)
+        database.session.commit()
         user_id = user.id
 
     with client.session_transaction() as session:
@@ -164,7 +164,7 @@ def test_logged_in_user_can_add_favorite(app, client, db, models):
 
 
 def test_spot_forecast_renders_using_mocked_forecast_data(client, monkeypatch):
-    import app as app_module
+    import app.routes as routes_module
 
     mocked_payloads = {
         "wave": _mock_wave(),
@@ -174,7 +174,7 @@ def test_spot_forecast_renders_using_mocked_forecast_data(client, monkeypatch):
     }
 
     monkeypatch.setattr(
-        app_module,
+        routes_module,
         "get_forecast_info",
         lambda forecast_type, spot_id: mocked_payloads[forecast_type],
     )

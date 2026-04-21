@@ -22,7 +22,7 @@
 
     <section class="spot-card-grid" data-spot-results>
         {% for spot, spot_data in spots.items() %}
-            <a class="spot-card-link" href="{{ url_for('spot_forecast', spot_route=spot|lower|replace(' ', '_')) }}" data-spot-name="{{ spot|lower }}">
+            <a class="spot-card-link" href="{{ url_for('routes.spot_forecast', spot_route=spot|lower|replace(' ', '_')) }}" data-spot-name="{{ spot|lower }}">
                 <article class="spot-card">
                     <div class="spot-card-media">
                         <img

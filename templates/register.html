@@ -20,7 +20,7 @@
                 <p class="section-kicker">New account</p>
                 <h2 class="section-title section-title-sm">Register</h2>
 
-                <form action="{{ url_for('register') }}" method="post" class="stacked-form">
+                <form action="{{ url_for('routes.register') }}" method="post" class="stacked-form">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div>
                         <label class="form-label" for="register-username">Username</label>
@@ -37,7 +37,7 @@
                     <button class="btn app-primary-button" type="submit">Create account</button>
                 </form>
 
-                <p class="auth-meta mb-0">Already registered? <a href="{{ url_for('login') }}">Log in</a>.</p>
+                <p class="auth-meta mb-0">Already registered? <a href="{{ url_for('routes.login') }}">Log in</a>.</p>
             </div>
         </div>
     </section>

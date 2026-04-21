@@ -5,7 +5,7 @@
 
 ![Homepage Screenshot](static/images/homepage/homepage.jpeg)
 
-## 🌊 Description
+## 🌊 Overview
 Gold Coast Surf Forecast is a web application built using Python and Flask to offer real-time updates on surf conditions across all the prominent surf spots along the Gold Coast. This platform is designed to provide surfers with accurate and timely surf forecasts to enhance their surfing experience.
 
 ## ✨ Features
@@ -30,7 +30,7 @@ Gold Coast Surf Forecast is a web application built using Python and Flask to of
 ## 🛠️ Development Setup
 
 ### Prerequisites
-- Python 3.x
+- Python 3.11+
 - Flask
 - SQLAlchemy
 
@@ -88,10 +88,29 @@ Gold Coast Surf Forecast is a web application built using Python and Flask to of
 7. Start the Flask application:
 
     ```bash
-    flask run
+    python -m app
     ```
 
 8. Open your browser and go to `http://127.0.0.1:5000`.
+
+## ✅ Testing
+
+Run the full test suite with:
+
+```bash
+python -m pytest
+```
+
+## 🧱 Project Structure
+
+The application now uses a Flask application factory with the main code organized inside the `app/` package:
+
+- `app/__init__.py` creates and configures the Flask app through `create_app()`
+- `app/routes.py` contains the route handlers in a blueprint
+- `app/models.py` contains the SQLAlchemy models
+- `app/helpers.py` contains forecast and utility helpers
+- `app/extensions.py` initializes shared Flask extensions
+- `wsgi.py` exposes the production entrypoint for Gunicorn
 
 ## 🐳 Docker (optional)
 
@@ -120,7 +139,7 @@ Gold Coast Surf Forecast is a web application built using Python and Flask to of
 3. Open your browser and go to `http://127.0.0.1:5000`.
 
 ## 🗒️ Notes
-- The app uses SQLite for local development and PostgreSQL when running with Docker to manage and store user profiles, surf spot details, and real-time surf conditions.
+- The app uses SQLite and PostgreSQL to manage and store user profiles, favorite surf spots, and real-time surf conditions.
 
 - Flask-Session provides server-side session management.
 

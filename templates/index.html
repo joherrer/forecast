@@ -15,8 +15,8 @@
                 Browse surf forecasts and keep your favorite breaks close so you can check conditions and plan your next session.
             </p>
             <div class="hero-actions">
-                <a class="btn app-primary-button" href="{{ url_for('spots_route') }}">Browse all spots</a>
-                <a class="btn app-secondary-button" href="{{ url_for('spot_forecast', spot_route='kirra') }}">View Kirra forecast</a>
+                <a class="btn app-primary-button" href="{{ url_for('routes.spots_route') }}">Browse all spots</a>
+                <a class="btn app-secondary-button" href="{{ url_for('routes.spot_forecast', spot_route='kirra') }}">View Kirra forecast</a>
             </div>
         </div>
 
@@ -24,10 +24,10 @@
             <div class="feature-card spotlight-card">
                 <p class="spotlight-label">Popular checks</p>
                 <div class="quick-spot-grid">
-                    <a href="{{ url_for('spot_forecast', spot_route='snapper_rocks') }}">Snapper Rocks</a>
-                    <a href="{{ url_for('spot_forecast', spot_route='duranbah') }}">Duranbah</a>
-                    <a href="{{ url_for('spot_forecast', spot_route='burleigh_heads') }}">Burleigh Heads</a>
-                    <a href="{{ url_for('spot_forecast', spot_route='kirra') }}">Kirra</a>
+                    <a href="{{ url_for('routes.spot_forecast', spot_route='snapper_rocks') }}">Snapper Rocks</a>
+                    <a href="{{ url_for('routes.spot_forecast', spot_route='duranbah') }}">Duranbah</a>
+                    <a href="{{ url_for('routes.spot_forecast', spot_route='burleigh_heads') }}">Burleigh Heads</a>
+                    <a href="{{ url_for('routes.spot_forecast', spot_route='kirra') }}">Kirra</a>
                 </div>
             </div>
 
