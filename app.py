@@ -7,6 +7,7 @@ from flask import Flask, flash, redirect, render_template, request, session, url
 from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
+from cachelib.file import FileSystemCache
 from sqlalchemy import UniqueConstraint
 from sqlalchemy.orm import relationship
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -19,13 +20,20 @@ load_dotenv()
 # Configure application.
 app = Flask(__name__)
 
+basedir = os.path.abspath(os.path.dirname(__file__))
+
 # Set up secret key.
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 if not app.config['SECRET_KEY']:
     raise RuntimeError('SECRET_KEY is required.')
 
 # Configure server-side sessions.
-app.config['SESSION_TYPE'] = 'filesystem'
+app.config['SESSION_TYPE'] = 'cachelib'
+app.config['SESSION_CACHELIB'] = FileSystemCache(
+    cache_dir=os.path.join(basedir, 'flask_session'),
+    threshold=500,
+)
+app.config['SESSION_SERIALIZATION_FORMAT'] = 'json'
 app.config['SESSION_PERMANENT'] = False
 app.config['SESSION_COOKIE_SECURE'] = os.getenv('SESSION_COOKIE_SECURE') == '1'
 app.config['SESSION_COOKIE_HTTPONLY'] = True
@@ -36,7 +44,6 @@ Session(app)
 csrf = CSRFProtect(app)
 
 # Configure database with SQLAlchemy.
-basedir = os.path.abspath(os.path.dirname(__file__))
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv(
     'DATABASE_URL',
     'sqlite:///' + os.path.join(basedir, 'forecast.db'),
