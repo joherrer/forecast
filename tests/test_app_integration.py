@@ -19,47 +19,35 @@ def _mock_wave():
                     "timestamp": _local_timestamp(6),
                     "surf": {"min": 2, "max": 3, "plus": False},
                     "power": 150,
-                    "swells": [
-                        {"height": 1.8, "period": 9, "direction": 90, "impact": 3},
-                        {"height": 1.2, "period": 7, "direction": 180, "impact": 2},
-                    ],
+                    "swells": [{"height": 1.8, "period": 9, "direction": 90, "impact": 3}],
                     "probability": 65,
                 },
                 {
                     "timestamp": _local_timestamp(9),
                     "surf": {"min": 3, "max": 4, "plus": True},
                     "power": 220,
-                    "swells": [
-                        {"height": 2.4, "period": 11, "direction": 135, "impact": 4},
-                        {"height": 1.0, "period": 6, "direction": 45, "impact": 1},
-                    ],
+                    "swells": [{"height": 2.4, "period": 11, "direction": 135, "impact": 4}],
                     "probability": 82,
                 },
                 {
                     "timestamp": _local_timestamp(12),
                     "surf": {"min": 2, "max": 3, "plus": False},
                     "power": 140,
-                    "swells": [
-                        {"height": 1.6, "period": 8, "direction": 120, "impact": 2},
-                    ],
+                    "swells": [{"height": 1.6, "period": 8, "direction": 120, "impact": 2}],
                     "probability": 58,
                 },
                 {
                     "timestamp": _local_timestamp(15),
                     "surf": {"min": 2, "max": 3, "plus": False},
                     "power": 130,
-                    "swells": [
-                        {"height": 1.4, "period": 8, "direction": 110, "impact": 2},
-                    ],
+                    "swells": [{"height": 1.4, "period": 8, "direction": 110, "impact": 2}],
                     "probability": 54,
                 },
                 {
                     "timestamp": _local_timestamp(18),
                     "surf": {"min": 2, "max": 3, "plus": False},
                     "power": 140,
-                    "swells": [
-                        {"height": 1.6, "period": 8, "direction": 120, "impact": 2},
-                    ],
+                    "swells": [{"height": 1.6, "period": 8, "direction": 120, "impact": 2}],
                     "probability": 58,
                 },
             ]
@@ -71,11 +59,11 @@ def _mock_wind():
     return {
         "data": {
             "wind": [
-                {"speed": 8, "direction": 45},
-                {"speed": 10, "direction": 90},
-                {"speed": 12, "direction": 120},
-                {"speed": 14, "direction": 180},
-                {"speed": 16, "direction": 225},
+                {"timestamp": _local_timestamp(6), "speed": 8, "direction": 45},
+                {"timestamp": _local_timestamp(9), "speed": 10, "direction": 90},
+                {"timestamp": _local_timestamp(12), "speed": 12, "direction": 120},
+                {"timestamp": _local_timestamp(15), "speed": 14, "direction": 180},
+                {"timestamp": _local_timestamp(18), "speed": 16, "direction": 225},
             ]
         }
     }
@@ -85,11 +73,11 @@ def _mock_weather():
     return {
         "data": {
             "weather": [
-                {"temperature": 23, "pressure": 1015},
-                {"temperature": 25, "pressure": 1013},
-                {"temperature": 24, "pressure": 1011},
-                {"temperature": 22, "pressure": 1010},
-                {"temperature": 21, "pressure": 1009},
+                {"timestamp": _local_timestamp(6), "temperature": 23, "pressure": 1015},
+                {"timestamp": _local_timestamp(9), "temperature": 25, "pressure": 1013},
+                {"timestamp": _local_timestamp(12), "temperature": 24, "pressure": 1011},
+                {"timestamp": _local_timestamp(15), "temperature": 22, "pressure": 1010},
+                {"timestamp": _local_timestamp(18), "temperature": 21, "pressure": 1009},
             ]
         }
     }
@@ -108,7 +96,16 @@ def _mock_conditions():
     }
 
 
+def test_homepage_loads(client):
+    # Smoke test the public landing page.
+    response = client.get("/")
+
+    assert response.status_code == 200
+    assert b"Gold Coast" in response.data
+
+
 def test_register_creates_user_and_logs_them_in(app, client, database, models):
+    # Cover the main auth flow from form submission through persisted user creation.
     response = client.post(
         "/register",
         data={
@@ -133,6 +130,7 @@ def test_register_creates_user_and_logs_them_in(app, client, database, models):
 
 
 def test_favorites_requires_login(client):
+    # Protected pages should redirect anonymous users to the login screen.
     response = client.get("/favorites")
 
     assert response.status_code == 302
@@ -140,6 +138,7 @@ def test_favorites_requires_login(client):
 
 
 def test_logged_in_user_can_add_favorite(app, client, database, models):
+    # Logged-in users should be able to save a spot through the favorites form.
     with app.app_context():
         user = models["Users"](username="regularfooter", hash="hashed-password")
         database.session.add(user)
@@ -160,10 +159,12 @@ def test_logged_in_user_can_add_favorite(app, client, database, models):
 
     with app.app_context():
         favorite = models["Favorites"].query.filter_by(user_id=user_id, spot="Kirra").first()
+
     assert favorite is not None
 
 
-def test_spot_forecast_renders_using_mocked_forecast_data(client, monkeypatch):
+def test_spot_forecast_page_renders_with_mocked_api_data(client, monkeypatch):
+    # Mock Surfline responses so the forecast page can be tested without network calls.
     import app.routes as routes_module
 
     mocked_payloads = {
@@ -184,4 +185,5 @@ def test_spot_forecast_renders_using_mocked_forecast_data(client, monkeypatch):
     assert response.status_code == 200
     assert b"Kirra" in response.data
     assert b"Daily overview" in response.data
+    assert b"Hourly forecast" in response.data
     assert b"Clean morning windows." in response.data

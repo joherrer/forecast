@@ -22,7 +22,7 @@
         </div>
     </section>
 
-    {% if overview_rows and forecast_rows %}
+    {% if has_forecast_data %}
         <section class="content-card">
             <div class="section-heading">
                 <div>
@@ -53,7 +53,7 @@
                                     &nbsp;<span class="direction-text">{{ swell.direction.label }}{% if swell.direction.rotation is not none %}<span class="direction-arrow" style="--direction-rotation: {{ swell.direction.rotation }}deg;" aria-hidden="true"><svg viewBox="0 0 16 16" focusable="false"><path d="M8 2 11.5 5.5H9V14H7V5.5H4.5z"></path></svg></span>{% endif %}</span>
                                 </td>
                             {% endfor %}
-                            <td data-label="Wind">{% if row.wind_speed is not none %}{{ row.wind_speed|int }}kts{% else %}-{% endif %} &nbsp;<span class="direction-text">{{ row.wind_direction.label }}{% if row.wind_direction.rotation is not none %}<span class="direction-arrow" style="--direction-rotation: {{ row.wind_direction.rotation }}deg;" aria-hidden="true"><svg viewBox="0 0 16 16" focusable="false"><path d="M8 2 11.5 5.5H9V14H7V5.5H4.5z"></path></svg></span>{% endif %}</span></td>
+                            <td data-label="Wind">{% if row.wind_speed is not none %}{{ row.wind_speed|round(0, 'common')|int }}kts{% else %}-{% endif %} &nbsp;<span class="direction-text">{{ row.wind_direction.label }}{% if row.wind_direction.rotation is not none %}<span class="direction-arrow" style="--direction-rotation: {{ row.wind_direction.rotation }}deg;" aria-hidden="true"><svg viewBox="0 0 16 16" focusable="false"><path d="M8 2 11.5 5.5H9V14H7V5.5H4.5z"></path></svg></span>{% endif %}</span></td>
                         </tr>
                     {% endfor %}
                 </tbody>                                       
@@ -103,7 +103,7 @@
                         <tr>
                             <td data-label="Time">{{ row.time }}</td>
                             <td colspan="2" data-label="Surf">{{ row.surf_min }}-{{ row.surf_max }}ft{% if row.surf_plus %}+{% else %}&nbsp;{% endif %}</td>
-                            <td data-label="Energy">{{ row.power|int if row.power is not none else '-' }}</td>
+                            <td data-label="Energy">{{ row.power|round(0, 'common')|int if row.power is not none else '-' }}</td>
                             {% for swell in row.swells %}
                                 <td data-label="{% if loop.first %}Primary Swell{% else %}Secondary Swell{% endif %}">
                                     {% if swell.height != '-' %}{{ swell.height }}ft{% else %}-{% endif %}
@@ -111,10 +111,10 @@
                                     &nbsp;<span class="direction-text">{{ swell.direction.label }}{% if swell.direction.rotation is not none %}<span class="direction-arrow" style="--direction-rotation: {{ swell.direction.rotation }}deg;" aria-hidden="true"><svg viewBox="0 0 16 16" focusable="false"><path d="M8 2 11.5 5.5H9V14H7V5.5H4.5z"></path></svg></span>{% endif %}</span>
                                 </td>
                             {% endfor %}
-                            <td data-label="Wind">{% if row.wind_speed is not none %}{{ row.wind_speed|int }}kts{% else %}-{% endif %} &nbsp;<span class="direction-text">{{ row.wind_direction.label }}{% if row.wind_direction.rotation is not none %}<span class="direction-arrow" style="--direction-rotation: {{ row.wind_direction.rotation }}deg;" aria-hidden="true"><svg viewBox="0 0 16 16" focusable="false"><path d="M8 2 11.5 5.5H9V14H7V5.5H4.5z"></path></svg></span>{% endif %}</span></td>
-                            <td data-label="Weather">{% if row.temperature is not none %}{{ row.temperature|int }}°C{% else %}-{% endif %}</td>
+                            <td data-label="Wind">{% if row.wind_speed is not none %}{{ row.wind_speed|round(0, 'common')|int }}kts{% else %}-{% endif %} &nbsp;<span class="direction-text">{{ row.wind_direction.label }}{% if row.wind_direction.rotation is not none %}<span class="direction-arrow" style="--direction-rotation: {{ row.wind_direction.rotation }}deg;" aria-hidden="true"><svg viewBox="0 0 16 16" focusable="false"><path d="M8 2 11.5 5.5H9V14H7V5.5H4.5z"></path></svg></span>{% endif %}</span></td>
+                            <td data-label="Weather">{% if row.temperature is not none %}{{ row.temperature|round(0, 'common')|int }}°C{% else %}-{% endif %}</td>
                             <td data-label="Pressure">{% if row.pressure is not none %}{{ row.pressure }}mb{% else %}-{% endif %}</td>
-                            <td data-label="Probability">{% if row.probability is not none %}{{ row.probability|int }}%{% else %}-{% endif %}</td>
+                            <td data-label="Probability">{% if row.probability is not none %}{{ row.probability|round(0, 'common')|int }}%{% else %}-{% endif %}</td>
                         </tr>
                     {% endfor %}
                 </tbody>                                         

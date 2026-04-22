@@ -6,6 +6,10 @@
 
 {% block body_class %}page-home{% endblock %}
 
+{% block page_preloads %}
+    <link rel="preload" href="{{ url_for('static', filename='images/carousel/carousel-1.jpg') }}" as="image">
+{% endblock %}
+
 {% block main %}
     <section class="hero-panel hero-home">
         <div class="hero-copy">

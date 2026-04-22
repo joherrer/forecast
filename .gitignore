@@ -1,28 +1,38 @@
-# Ignore compiled Python files
+# Python bytecode and caches
 *.pyc
 __pycache__/
+*.pyo
+*.pyd
 
-# Ignore Flask Session
+# Test and tool caches
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local session storage
 flask_session/
 
-# Ignore Python virtual environment
+# Virtual environment
 venv/
 
-# Ignore environment variables
+# Environment variables
 .env
+.env.*
 
-# Ignore Database Files
+# Local database files
 *.db
+*.sqlite
+*.sqlite3
 forecast.db
 
-# Ignore macOS Finder metadata
+# macOS Finder metadata
 .DS_Store
 
-# Ignore other IDE-specific files
+# Editor settings
 .idea/
 .vscode/
 
-# Ignore logs and temporary files
+# Logs and temporary files
 *.log
 *.tmp
 *.bak

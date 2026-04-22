@@ -22,6 +22,35 @@ Gold Coast Surf Forecast is a web application built using Python and Flask to of
 - **Session Management**: Flask-Session
 - **Security**: Werkzeug, Flask-WTF
 
+## 🏗️ Project Structure
+
+```text
+app/
+├── __init__.py
+├── __main__.py
+├── data.py
+├── extensions.py
+├── helpers.py
+├── models.py
+└── routes.py
+static/
+├── icons/
+├── images/
+├── main.js
+└── styles.css
+templates/
+└── ...
+tests/
+└── ...
+Dockerfile
+Procfile
+docker-compose.yml
+pytest.ini
+README.md
+requirements.txt
+wsgi.py
+```
+
 ## 🏄 Usage
 1. Register a new account or log in if you already have one.
 2. Browse surf spots and save your favorites.
@@ -88,31 +117,19 @@ Gold Coast Surf Forecast is a web application built using Python and Flask to of
 7. Start the Flask application:
 
     ```bash
-    python -m app
+    python3 -m app
     ```
 
 8. Open your browser and go to `http://127.0.0.1:5000`.
 
-## ✅ Testing
-
+## 🧪 Testing
 Run the full test suite with:
 
 ```bash
-python -m pytest
+python3 -m pytest
 ```
 
-## 🧱 Project Structure
-
-The application now uses a Flask application factory with the main code organized inside the `app/` package:
-
-- `app/__init__.py` creates and configures the Flask app through `create_app()`
-- `app/routes.py` contains the route handlers in a blueprint
-- `app/models.py` contains the SQLAlchemy models
-- `app/helpers.py` contains forecast and utility helpers
-- `app/extensions.py` initializes shared Flask extensions
-- `wsgi.py` exposes the production entrypoint for Gunicorn
-
-## 🐳 Docker (optional)
+## 🐳 Docker
 
 ### Prerequisites
 - Docker

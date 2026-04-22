@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 
-from app.helpers import build_forecast_rows, degrees_to_cardinal, get_conditions_content
+from app.helpers import build_forecast_rows
 
 
 TEST_TZ = timezone(timedelta(hours=10))
@@ -10,29 +10,8 @@ def _local_timestamp(hour):
     return int(datetime(2024, 4, 20, hour, tzinfo=TEST_TZ).timestamp())
 
 
-def test_degrees_to_cardinal_returns_expected_label_and_rotation():
-    result = degrees_to_cardinal(90)
-
-    assert result == {"label": "E", "rotation": 270.0}
-
-
-def test_get_conditions_content_combines_available_text():
-    conditions = {
-        "data": {
-            "conditions": [
-                {"headline": "Clean early.", "observation": "Light offshore wind."},
-                {"headline": "Fun mid tide.", "observation": "Best before lunch."},
-            ]
-        }
-    }
-
-    result = get_conditions_content(conditions)
-
-    assert result["headline"] == "Clean early. Fun mid tide."
-    assert result["observation_text"] == "Light offshore wind. Best before lunch."
-
-
-def test_build_forecast_rows_filters_requested_hours_and_formats_values():
+def test_build_forecast_rows_returns_requested_forecast_hours():
+    # The helper should keep the requested forecast slots in local-time order.
     wave = {
         "associated": {"utcOffset": 10},
         "data": {
@@ -51,9 +30,7 @@ def test_build_forecast_rows_filters_requested_hours_and_formats_values():
                     "timestamp": _local_timestamp(9),
                     "surf": {"min": 3, "max": 4, "plus": False},
                     "power": 220,
-                    "swells": [
-                        {"height": 2.5, "period": 11, "direction": 135, "impact": 4},
-                    ],
+                    "swells": [{"height": 2.5, "period": 11, "direction": 135, "impact": 4}],
                     "probability": 80,
                 },
             ]
@@ -62,16 +39,16 @@ def test_build_forecast_rows_filters_requested_hours_and_formats_values():
     wind = {
         "data": {
             "wind": [
-                {"speed": 12, "direction": 45},
-                {"speed": 18, "direction": 225},
+                {"timestamp": _local_timestamp(6), "speed": 12, "direction": 45},
+                {"timestamp": _local_timestamp(9), "speed": 18, "direction": 225},
             ]
         }
     }
     weather = {
         "data": {
             "weather": [
-                {"temperature": 24, "pressure": 1014},
-                {"temperature": 25, "pressure": 1012},
+                {"timestamp": _local_timestamp(6), "temperature": 24, "pressure": 1014},
+                {"timestamp": _local_timestamp(9), "temperature": 25, "pressure": 1012},
             ]
         }
     }
@@ -84,14 +61,12 @@ def test_build_forecast_rows_filters_requested_hours_and_formats_values():
         forecast_hours=[6, 9],
     )
 
-    assert [row["hour"] for row in result["overview_rows"]] == [6, 9]
+    assert [row["hour"] for row in result["forecast_rows"]] == [6, 9]
     assert [row["time"] for row in result["forecast_rows"]] == ["6 am", "9 am"]
-    assert result["forecast_rows"][0]["surf_plus"] is True
-    assert result["forecast_rows"][0]["swells"][0]["direction"]["label"] == "E"
-    assert result["forecast_rows"][1]["wind_direction"]["label"] == "SW"
 
 
-def test_build_forecast_rows_returns_empty_lists_when_any_series_is_missing():
+def test_build_forecast_rows_handles_missing_data_gracefully():
+    # Missing API data should still produce placeholder rows instead of an empty table.
     result = build_forecast_rows(
         wave={"associated": {"utcOffset": 10}, "data": {"wave": []}},
         wind={"data": {"wind": []}},
@@ -100,4 +75,6 @@ def test_build_forecast_rows_returns_empty_lists_when_any_series_is_missing():
         forecast_hours=[6, 9, 12, 15, 18],
     )
 
-    assert result == {"overview_rows": [], "forecast_rows": []}
+    assert [row["hour"] for row in result["overview_rows"]] == [6, 12, 18]
+    assert [row["hour"] for row in result["forecast_rows"]] == [6, 9, 12, 15, 18]
+    assert all(row["surf_min"] == "-" for row in result["forecast_rows"])

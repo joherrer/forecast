@@ -2,11 +2,12 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 
 from flask import Blueprint, flash, redirect, render_template, request, session, url_for
+from sqlalchemy.exc import IntegrityError
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from .data import spot_order, spot_slugs, spots
 from .extensions import db
-from .helpers import build_forecast_rows, get_conditions_content, get_forecast_info, login_required
+from .helpers import build_forecast_rows, get_conditions_content, get_forecast_info, has_forecast_entries, login_required
 from .models import Favorites, Users
 
 routes_bp = Blueprint("routes", __name__)
@@ -22,25 +23,24 @@ def login():
     if request.method == "GET":
         if session.get("user_id"):
             return redirect(url_for("routes.index"))
-        error_message = request.args.get("error")
-        return render_template("login.html", error=error_message)
+        return render_template("login.html")
 
     username = (request.form.get("username") or "").strip()
     if not username:
-        return redirect(url_for("routes.login", error="Must provide username"))
+        flash("Must provide username", "warning")
+        return redirect(url_for("routes.login"))
 
     password = request.form.get("password")
     if not password:
-        return redirect(url_for("routes.login", error="Must provide password"))
+        flash("Must provide password", "warning")
+        return redirect(url_for("routes.login"))
 
     user = Users.query.filter_by(username=username).first()
-    try:
-        password_matches = user is not None and check_password_hash(user.hash, password)
-    except AttributeError:
-        password_matches = False
+    password_matches = user is not None and check_password_hash(user.hash, password)
 
     if not password_matches:
-        return redirect(url_for("routes.login", error="Invalid username or password"))
+        flash("Invalid username or password", "warning")
+        return redirect(url_for("routes.login"))
 
     session["user_id"] = user.id
     flash("Logged in successfully", "success")
@@ -81,7 +81,12 @@ def register():
     password_hashed = generate_password_hash(password)
     new_user = Users(username=username, hash=password_hashed)
     db.session.add(new_user)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        flash("Username already exists", "warning")
+        return redirect(url_for("routes.register"))
 
     session["user_id"] = new_user.id
     flash("Account created successfully!", "success")
@@ -101,6 +106,7 @@ def spots_route():
 
 @routes_bp.route("/spots/<spot_route>", methods=["GET"])
 def spot_forecast(spot_route):
+    # Only allow forecast pages for slugs derived from the known spot list.
     spot_name = spot_slugs.get(spot_route.lower())
     spot = spots.get(spot_name) if spot_name else None
     spot_id = spot["id"] if spot else None
@@ -113,6 +119,13 @@ def spot_forecast(spot_route):
     weather = get_forecast_info("weather", spot_id)
     conditions = get_forecast_info("conditions", spot_id)
     conditions_content = get_conditions_content(conditions)
+    has_forecast_data = any(
+        [
+            has_forecast_entries(wave, "wave"),
+            has_forecast_entries(wind, "wind"),
+            has_forecast_entries(weather, "weather"),
+        ]
+    )
     rows = build_forecast_rows(
         wave,
         wind,
@@ -128,6 +141,7 @@ def spot_forecast(spot_route):
         current_date=current_date,
         headline=conditions_content["headline"],
         observation_text=conditions_content["observation_text"],
+        has_forecast_data=has_forecast_data,
         overview_rows=rows["overview_rows"],
         forecast_rows=rows["forecast_rows"],
     )
@@ -138,6 +152,7 @@ def spot_forecast(spot_route):
 def favorites():
     user_id = session["user_id"]
     if request.method == "POST":
+        # Handle add/remove actions from the same form endpoint.
         action = request.form.get("action")
 
         if action == "add":
@@ -157,7 +172,12 @@ def favorites():
 
             new_favorite = Favorites(user_id=user_id, spot=spot)
             db.session.add(new_favorite)
-            db.session.commit()
+            try:
+                db.session.commit()
+            except IntegrityError:
+                db.session.rollback()
+                flash("Spot already exists", "warning")
+                return redirect(url_for("routes.favorites"))
             flash("Spot added to favorites", "success")
             return redirect(url_for("routes.favorites"))
 

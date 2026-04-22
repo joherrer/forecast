@@ -5,6 +5,7 @@ from .extensions import db
 
 
 class Users(db.Model):
+    # Store account credentials and the user's saved spots.
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
@@ -13,6 +14,7 @@ class Users(db.Model):
 
 
 class Favorites(db.Model):
+    # Each user/spot pair should only appear once.
     __tablename__ = "favorites"
     __table_args__ = (UniqueConstraint("user_id", "spot", name="uq_favorites_user_spot"),)
     id = db.Column(db.Integer, primary_key=True)

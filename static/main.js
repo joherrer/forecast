@@ -1,6 +1,5 @@
-/* Javascript file */
-
 document.addEventListener('DOMContentLoaded', () => {
+    // Auto-dismiss Bootstrap alerts after a short delay.
     const alerts = document.querySelectorAll('.alert.alert-dismissible');
     const header = document.querySelector('.app-header');
     const spotFilter = document.querySelector('[data-spot-filter]');
@@ -17,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     if (header) {
+        // Toggle the scrolled state so the header can adjust styling after scroll.
         const syncHeaderState = () => {
             header.classList.toggle('app-header-scrolled', window.scrollY > 12);
         };
@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (spotFilter && spotResults && emptyState) {
         const spotCards = Array.from(spotResults.querySelectorAll('[data-spot-name]'));
 
+        // Filter cards in place and reveal an empty state when no matches remain.
         const applyFilter = () => {
             const query = spotFilter.value.trim().toLowerCase();
             let visibleCount = 0;
@@ -44,5 +45,6 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         spotFilter.addEventListener('input', applyFilter);
+        applyFilter();
     }
 });

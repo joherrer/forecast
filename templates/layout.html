@@ -30,10 +30,13 @@
         <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='icons/favicon.ico') }}">
         <link rel="shortcut icon" href="{{ url_for('static', filename='icons/favicon.ico') }}">
 
-        <!-- Google Fonts -->
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+        <!-- Self-hosted font preloads for the first paint -->
+        <link rel="preload" href="{{ url_for('static', filename='images/homepage/gold-coast.jpeg') }}" as="image">
+        <link rel="preload" href="{{ url_for('static', filename='fonts/lora-latin.woff2') }}" as="font" type="font/woff2" crossorigin>
+        <link rel="preload" href="{{ url_for('static', filename='fonts/manrope-latin.woff2') }}" as="font" type="font/woff2" crossorigin>
+        <link rel="preload" href="{{ url_for('static', filename='fonts/space-grotesk-latin.woff2') }}" as="font" type="font/woff2" crossorigin>
+
+        {% block page_preloads %}{% endblock %}
 
         <title>Gold Coast Forecast | {% block title %}{% endblock %}</title>
     </head>

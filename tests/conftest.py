@@ -18,6 +18,7 @@ os.environ.setdefault("SESSION_COOKIE_SECURE", "0")
 
 @pytest.fixture
 def app():
+    # Use the real app factory with test-friendly config and a disposable database state.
     app = create_app(
         {
             "TESTING": True,
@@ -44,6 +45,7 @@ def client(app):
 
 @pytest.fixture
 def models():
+    # Expose model classes explicitly so tests can stay decoupled from import paths.
     return {
         "Users": Users,
         "Favorites": Favorites,
