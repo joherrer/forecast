@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 
-from app.helpers import build_forecast_rows
+from app.helpers import build_forecast_rows, get_conditions_content
 
 
 TEST_TZ = timezone(timedelta(hours=10))
@@ -61,7 +61,6 @@ def test_build_forecast_rows_returns_requested_forecast_hours():
         forecast_hours=[6, 9],
     )
 
-    assert [row["hour"] for row in result["forecast_rows"]] == [6, 9]
     assert [row["time"] for row in result["forecast_rows"]] == ["6 am", "9 am"]
 
 
@@ -75,6 +74,46 @@ def test_build_forecast_rows_handles_missing_data_gracefully():
         forecast_hours=[6, 9, 12, 15, 18],
     )
 
-    assert [row["hour"] for row in result["overview_rows"]] == [6, 12, 18]
-    assert [row["hour"] for row in result["forecast_rows"]] == [6, 9, 12, 15, 18]
+    assert [row["time"] for row in result["overview_rows"]] == ["6 am", "12 pm", "6 pm"]
+    assert [row["time"] for row in result["forecast_rows"]] == ["6 am", "9 am", "12 pm", "3 pm", "6 pm"]
     assert all(row["surf_min"] == "-" for row in result["forecast_rows"])
+
+
+def test_build_forecast_rows_tolerates_partial_api_payloads():
+    # Partial Surfline responses should leave placeholders instead of raising KeyError.
+    result = build_forecast_rows(
+        wave={
+            "associated": {"utcOffset": 10},
+            "data": {
+                "wave": [
+                    {"timestamp": _local_timestamp(6), "surf": {"min": 2}},
+                    {"surf": {"min": 3, "max": 4}},
+                ]
+            }
+        },
+        wind={"data": {"wind": [{"speed": 12}, {"timestamp": _local_timestamp(6)}]}},
+        weather={"data": {"weather": [{"timestamp": _local_timestamp(6)}]}},
+        overview_hours=[6],
+        forecast_hours=[6, 9],
+    )
+
+    row = result["forecast_rows"][0]
+    assert row["time"] == "6 am"
+    assert row["surf_min"] == 2
+    assert row["surf_max"] == "-"
+    assert row["wind_speed"] is None
+    assert row["temperature"] is None
+    assert result["forecast_rows"][1]["surf_min"] == "-"
+
+
+def test_get_conditions_content_handles_missing_conditions():
+    assert get_conditions_content(None) == {"headline": "", "observation_text": ""}
+    assert get_conditions_content({"data": {"conditions": []}}) == {
+        "headline": "",
+        "observation_text": "",
+    }
+    assert get_conditions_content({"data": {"conditions": [{"headline": "Clean"}]}}) == {
+        "headline": "Clean",
+        "observation_text": "",
+    }
+

@@ -6,6 +6,7 @@ import cloudscraper
 import requests
 from flask import redirect, session, url_for
 
+
 logger = logging.getLogger(__name__)
 
 SURFLINE_HEADERS = {
@@ -21,6 +22,7 @@ SURFLINE_SCRAPER = cloudscraper.create_scraper(
 
 
 def login_required(f):
+    # Redirect anonymous users before they access protected routes.
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if "user_id" not in session:
@@ -30,19 +32,22 @@ def login_required(f):
     return decorated_function
 
 
-def format_local_hour(timestamp, utc_offset):
-    # Convert api timestamp into the spot's local hour.
-    tzinfo = timezone(timedelta(hours=utc_offset or 0))
-    dt = datetime.fromtimestamp(timestamp, tz=tzinfo)
-    hour = dt.strftime("%I %p").lower()
-    return hour[1:] if hour.startswith("0") else hour
+def format_hour(hour):
+    # Convert a 24-hour value into a label shown in forecast tables.
+    period = "am" if hour < 12 else "pm"
+    display_hour = hour % 12 or 12
+    return f"{display_hour} {period}"
 
 
-def format_hour_label(hour):
-    # Render a plain hour label for fallback rows that have no API timestamp.
-    dt = datetime(2000, 1, 1, hour % 24, 0)
-    formatted = dt.strftime("%I %p").lower()
-    return formatted[1:] if formatted.startswith("0") else formatted
+def format_height(height):
+    # Keep swell heights clean by dropping trailing .0 values.
+    if height is None:
+        return "-"
+
+    rounded = round(height, 1)
+    if rounded.is_integer():
+        return str(int(rounded))
+    return f"{rounded:.1f}"
 
 
 def degrees_to_cardinal(degrees):
@@ -60,17 +65,6 @@ def degrees_to_cardinal(degrees):
     label = directions[index]
     rotation = (index * 22.5 + 180) % 360
     return {"label": label, "rotation": rotation}
-
-
-def format_height(height):
-    # Keep swell heights clean by dropping trailing .0 values.
-    if height is None:
-        return "-"
-
-    rounded = round(height, 1)
-    if rounded.is_integer():
-        return str(int(rounded))
-    return f"{rounded:.1f}"
 
 
 def build_swell_cells(swells, limit=2):
@@ -102,67 +96,56 @@ def build_swell_cells(swells, limit=2):
     return cells
 
 
-def get_forecast_utc_offset(*payloads):
-    # Use the first available forecast payload that includes a usable utc offset.
-    for payload in payloads:
-        utc_offset = (payload or {}).get("associated", {}).get("utcOffset")
-        if utc_offset is not None:
-            return utc_offset
-    return 0
-
-
-def has_forecast_entries(payload, key):
-    # Treat a forecast source as usable only when it contains at least one entry.
-    return bool((payload or {}).get("data", {}).get(key))
-
-
 def build_forecast_rows(wave, wind, weather, overview_hours, forecast_hours):
-    # Merge separate api responses into render-ready rows for the template.
-    wave_items = (wave or {}).get("data", {}).get("wave", [])
-    wind_items = (wind or {}).get("data", {}).get("wind", [])
-    weather_items = (weather or {}).get("data", {}).get("weather", [])
-    utc_offset = get_forecast_utc_offset(wave, wind, weather)
-    tzinfo = timezone(timedelta(hours=utc_offset or 0))
+    # Wave entries define the forecast rows; wind and weather add matching details.
+    wave_entries = (wave or {}).get("data", {}).get("wave", []) or []
+    wind_entries = (wind or {}).get("data", {}).get("wind", []) or []
+    weather_entries = (weather or {}).get("data", {}).get("weather", []) or []
 
-    wave_by_timestamp = {
-        item.get("timestamp"): item for item in wave_items if item.get("timestamp") is not None
-    }
+    utc_offset = (wave or {}).get("associated", {}).get("utcOffset", 0) or 0
+    tzinfo = timezone(timedelta(hours=utc_offset))
+    requested_hours = set(overview_hours + forecast_hours)
+
     wind_by_timestamp = {
-        item.get("timestamp"): item for item in wind_items if item.get("timestamp") is not None
+        entry["timestamp"]: entry for entry in wind_entries if entry.get("timestamp") is not None
     }
     weather_by_timestamp = {
-        item.get("timestamp"): item for item in weather_items if item.get("timestamp") is not None
+        entry["timestamp"]: entry for entry in weather_entries if entry.get("timestamp") is not None
     }
-    timestamps = sorted(set(wave_by_timestamp) | set(wind_by_timestamp) | set(weather_by_timestamp))
 
     rows_by_hour = {}
-    for timestamp in timestamps:
-        item_wave = wave_by_timestamp.get(timestamp)
-        item_wind = wind_by_timestamp.get(timestamp)
-        item_weather = weather_by_timestamp.get(timestamp)
+    for wave_entry in wave_entries:
+        timestamp = wave_entry.get("timestamp")
+        if timestamp is None:
+            continue
 
         local_dt = datetime.fromtimestamp(timestamp, tz=tzinfo)
+        hour = local_dt.hour
+        if hour not in requested_hours:
+            continue
+
+        wind_entry = wind_by_timestamp.get(timestamp)
+        weather_entry = weather_by_timestamp.get(timestamp)
+
         row = {
-            "hour": local_dt.hour,
-            "time": format_local_hour(timestamp, utc_offset),
-            "surf_min": item_wave.get("surf", {}).get("min", "-") if item_wave else "-",
-            "surf_max": item_wave.get("surf", {}).get("max", "-") if item_wave else "-",
-            "surf_plus": bool(item_wave.get("surf", {}).get("plus")) if item_wave else False,
-            "power": item_wave.get("power") if item_wave else None,
-            "swells": build_swell_cells(item_wave.get("swells") if item_wave else None),
-            "wind_speed": item_wind.get("speed") if item_wind else None,
-            "wind_direction": degrees_to_cardinal(item_wind.get("direction") if item_wind else None),
-            "temperature": item_weather.get("temperature") if item_weather else None,
-            "pressure": item_weather.get("pressure") if item_weather else None,
-            "probability": item_wave.get("probability") if item_wave else None,
+            "time": format_hour(hour),
+            "surf_min": wave_entry.get("surf", {}).get("min", "-"),
+            "surf_max": wave_entry.get("surf", {}).get("max", "-"),
+            "surf_plus": bool(wave_entry.get("surf", {}).get("plus")),
+            "power": wave_entry.get("power"),
+            "swells": build_swell_cells(wave_entry.get("swells")),
+            "wind_speed": wind_entry.get("speed") if wind_entry else None,
+            "wind_direction": degrees_to_cardinal(wind_entry.get("direction") if wind_entry else None),
+            "temperature": weather_entry.get("temperature") if weather_entry else None,
+            "pressure": weather_entry.get("pressure") if weather_entry else None,
+            "probability": wave_entry.get("probability"),
         }
-        if row["hour"] not in rows_by_hour:
-            rows_by_hour[row["hour"]] = row
+        if hour not in rows_by_hour:
+            rows_by_hour[hour] = row
 
     def empty_row(hour):
         return {
-            "hour": hour,
-            "time": format_hour_label(hour),
+            "time": format_hour(hour),
             "surf_min": "-",
             "surf_max": "-",
             "surf_plus": False,
@@ -175,26 +158,21 @@ def build_forecast_rows(wave, wind, weather, overview_hours, forecast_hours):
             "probability": None,
         }
 
-    overview_rows = [rows_by_hour.get(hour, empty_row(hour)) for hour in overview_hours]
-    forecast_rows = [rows_by_hour.get(hour, empty_row(hour)) for hour in forecast_hours]
+    overview_rows = [rows_by_hour.get(hour) or empty_row(hour) for hour in overview_hours]
+    forecast_rows = [rows_by_hour.get(hour) or empty_row(hour) for hour in forecast_hours]
     return {"overview_rows": overview_rows, "forecast_rows": forecast_rows}
 
 
 def get_conditions_content(conditions):
-    # Pull headline and observations for the forecast page.
-    items = (conditions or {}).get("data", {}).get("conditions", [])
-    headlines = []
-    observations = []
-    for item in items:
-        headline = item.get("headline")
-        if headline:
-            headlines.append(headline)
-        observation = item.get("observation")
-        if observation:
-            observations.append(observation)
+    # Conditions are secondary content, so the page should still render if this request fails.
+    items = (conditions or {}).get("data", {}).get("conditions", []) or []
+    condition = next(iter(items), None)
+    if not condition:
+        return {"headline": "", "observation_text": ""}
+
     return {
-        "headline": " ".join(headlines),
-        "observation_text": " ".join(observations),
+        "headline": condition.get("headline", ""),
+        "observation_text": condition.get("observation", ""),
     }
 
 

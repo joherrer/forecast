@@ -39,9 +39,17 @@ static/
 ├── main.js
 └── styles.css
 templates/
-└── ...
+├── favorites.html
+├── forecast.html
+├── index.html
+├── layout.html
+├── login.html
+├── register.html
+└── spots.html
 tests/
-└── ...
+├── conftest.py
+├── test_app_integration.py
+└── test_helpers.py
 Dockerfile
 Procfile
 docker-compose.yml
@@ -126,7 +134,7 @@ wsgi.py
 Run the full test suite with:
 
 ```bash
-python3 -m pytest
+venv/bin/python -m pytest
 ```
 
 ## 🐳 Docker

@@ -1,5 +1,4 @@
-from datetime import datetime
-from zoneinfo import ZoneInfo
+from datetime import datetime, timedelta, timezone
 
 from flask import Blueprint, flash, redirect, render_template, request, session, url_for
 from sqlalchemy.exc import IntegrityError
@@ -7,8 +6,9 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from .data import spot_order, spot_slugs, spots
 from .extensions import db
-from .helpers import build_forecast_rows, get_conditions_content, get_forecast_info, has_forecast_entries, login_required
+from .helpers import build_forecast_rows, get_conditions_content, get_forecast_info, login_required
 from .models import Favorites, Users
+
 
 routes_bp = Blueprint("routes", __name__)
 
@@ -119,21 +119,22 @@ def spot_forecast(spot_route):
     weather = get_forecast_info("weather", spot_id)
     conditions = get_forecast_info("conditions", spot_id)
     conditions_content = get_conditions_content(conditions)
-    has_forecast_data = any(
-        [
-            has_forecast_entries(wave, "wave"),
-            has_forecast_entries(wind, "wind"),
-            has_forecast_entries(weather, "weather"),
-        ]
-    )
-    rows = build_forecast_rows(
-        wave,
-        wind,
-        weather,
-        overview_hours=[6, 12, 18],
-        forecast_hours=[6, 9, 12, 15, 18],
-    )
-    current_date = datetime.now(ZoneInfo("Australia/Brisbane")).strftime("%a, %d %B %Y")
+    has_forecast_data = bool((wave or {}).get("data", {}).get("wave"))
+    if has_forecast_data:
+        rows = build_forecast_rows(
+            wave,
+            wind,
+            weather,
+            overview_hours=[6, 12, 18],
+            forecast_hours=[6, 9, 12, 15, 18],
+        )
+        current_date = datetime.fromtimestamp(
+            wave["data"]["wave"][0]["timestamp"],
+            tz=timezone(timedelta(hours=wave["associated"]["utcOffset"])),
+        ).strftime("%a, %d %B %Y")
+    else:
+        rows = {"overview_rows": [], "forecast_rows": []}
+        current_date = ""
 
     return render_template(
         "forecast.html",
