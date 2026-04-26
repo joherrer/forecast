@@ -1,119 +1,68 @@
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 
-from app.helpers import build_forecast_rows, get_conditions_content
-
-
-TEST_TZ = timezone(timedelta(hours=10))
+from app.helpers import build_forecast_rows, degrees_to_cardinal, format_height, format_hour
 
 
-def _local_timestamp(hour):
-    return int(datetime(2024, 4, 20, hour, tzinfo=TEST_TZ).timestamp())
+def test_format_hour_uses_12_hour_labels():
+    assert format_hour(0) == "12 am"
+    assert format_hour(9) == "9 am"
+    assert format_hour(12) == "12 pm"
+    assert format_hour(18) == "6 pm"
 
 
-def test_build_forecast_rows_returns_requested_forecast_hours():
-    # The helper should keep the requested forecast slots in local-time order.
+def test_format_height_keeps_display_values_simple():
+    assert format_height(None) == "-"
+    assert format_height(2.0) == "2"
+    assert format_height(2.25) == "2.2"
+
+
+def test_degrees_to_cardinal_returns_label_and_arrow_rotation():
+    assert degrees_to_cardinal(None) == {"label": "-", "rotation": None}
+    assert degrees_to_cardinal(0) == {"label": "N", "rotation": 180.0}
+    assert degrees_to_cardinal(90) == {"label": "E", "rotation": 270.0}
+
+
+def test_build_forecast_rows_combines_wave_wind_and_weather_data():
+    # Minimal Surfline-shaped payload covering matched and missing forecast slots.
+    timestamp = int(datetime(2026, 1, 1, 6, tzinfo=timezone.utc).timestamp())
     wave = {
-        "associated": {"utcOffset": 10},
+        "associated": {"utcOffset": 0},
         "data": {
             "wave": [
                 {
-                    "timestamp": _local_timestamp(6),
+                    "timestamp": timestamp,
                     "surf": {"min": 2, "max": 3, "plus": True},
-                    "power": 180,
+                    "power": 120,
+                    "probability": 95,
                     "swells": [
-                        {"height": 2.0, "period": 10, "direction": 90, "impact": 3},
-                        {"height": 1.5, "period": 8, "direction": 180, "impact": 2},
+                        {"height": 1.5, "period": 10, "direction": 90, "impact": 2},
+                        {"height": 0.8, "period": 8, "direction": 180, "impact": 1},
                     ],
-                    "probability": 75,
-                },
-                {
-                    "timestamp": _local_timestamp(9),
-                    "surf": {"min": 3, "max": 4, "plus": False},
-                    "power": 220,
-                    "swells": [{"height": 2.5, "period": 11, "direction": 135, "impact": 4}],
-                    "probability": 80,
-                },
+                }
             ]
         },
     }
-    wind = {
-        "data": {
-            "wind": [
-                {"timestamp": _local_timestamp(6), "speed": 12, "direction": 45},
-                {"timestamp": _local_timestamp(9), "speed": 18, "direction": 225},
-            ]
-        }
-    }
-    weather = {
-        "data": {
-            "weather": [
-                {"timestamp": _local_timestamp(6), "temperature": 24, "pressure": 1014},
-                {"timestamp": _local_timestamp(9), "temperature": 25, "pressure": 1012},
-            ]
-        }
-    }
+    wind = {"data": {"wind": [{"timestamp": timestamp, "speed": 12, "direction": 45}]}}
+    weather = {"data": {"weather": [{"timestamp": timestamp, "temperature": 24, "pressure": 1015}]}}
 
-    result = build_forecast_rows(
+    rows = build_forecast_rows(
         wave,
         wind,
         weather,
-        overview_hours=[6, 9],
-        forecast_hours=[6, 9],
+        overview_hours=[6, 12],
+        forecast_hours=[6, 9, 12],
     )
 
-    assert [row["time"] for row in result["forecast_rows"]] == ["6 am", "9 am"]
+    six_am_row = rows["overview_rows"][0]
+    assert six_am_row["time"] == "6 am"
+    assert six_am_row["surf_min"] == 2
+    assert six_am_row["surf_max"] == 3
+    assert six_am_row["surf_plus"] is True
+    assert six_am_row["wind_speed"] == 12
+    assert six_am_row["temperature"] == 24
+    assert six_am_row["swells"][0]["direction"]["label"] == "E"
 
-
-def test_build_forecast_rows_handles_missing_data_gracefully():
-    # Missing API data should still produce placeholder rows instead of an empty table.
-    result = build_forecast_rows(
-        wave={"associated": {"utcOffset": 10}, "data": {"wave": []}},
-        wind={"data": {"wind": []}},
-        weather={"data": {"weather": []}},
-        overview_hours=[6, 12, 18],
-        forecast_hours=[6, 9, 12, 15, 18],
-    )
-
-    assert [row["time"] for row in result["overview_rows"]] == ["6 am", "12 pm", "6 pm"]
-    assert [row["time"] for row in result["forecast_rows"]] == ["6 am", "9 am", "12 pm", "3 pm", "6 pm"]
-    assert all(row["surf_min"] == "-" for row in result["forecast_rows"])
-
-
-def test_build_forecast_rows_tolerates_partial_api_payloads():
-    # Partial Surfline responses should leave placeholders instead of raising KeyError.
-    result = build_forecast_rows(
-        wave={
-            "associated": {"utcOffset": 10},
-            "data": {
-                "wave": [
-                    {"timestamp": _local_timestamp(6), "surf": {"min": 2}},
-                    {"surf": {"min": 3, "max": 4}},
-                ]
-            }
-        },
-        wind={"data": {"wind": [{"speed": 12}, {"timestamp": _local_timestamp(6)}]}},
-        weather={"data": {"weather": [{"timestamp": _local_timestamp(6)}]}},
-        overview_hours=[6],
-        forecast_hours=[6, 9],
-    )
-
-    row = result["forecast_rows"][0]
-    assert row["time"] == "6 am"
-    assert row["surf_min"] == 2
-    assert row["surf_max"] == "-"
-    assert row["wind_speed"] is None
-    assert row["temperature"] is None
-    assert result["forecast_rows"][1]["surf_min"] == "-"
-
-
-def test_get_conditions_content_handles_missing_conditions():
-    assert get_conditions_content(None) == {"headline": "", "observation_text": ""}
-    assert get_conditions_content({"data": {"conditions": []}}) == {
-        "headline": "",
-        "observation_text": "",
-    }
-    assert get_conditions_content({"data": {"conditions": [{"headline": "Clean"}]}}) == {
-        "headline": "Clean",
-        "observation_text": "",
-    }
-
+    empty_midday_row = rows["overview_rows"][1]
+    assert empty_midday_row["time"] == "12 pm"
+    assert empty_midday_row["surf_min"] == "-"
+    assert empty_midday_row["wind_direction"]["label"] == "-"

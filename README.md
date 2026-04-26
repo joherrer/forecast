@@ -6,7 +6,9 @@
 ![Homepage Screenshot](static/images/homepage/homepage.jpeg)
 
 ## 🌊 Overview
-Gold Coast Surf Forecast is a web application built using Python and Flask to offer real-time updates on surf conditions across all the prominent surf spots along the Gold Coast. This platform is designed to provide surfers with accurate and timely surf forecasts to enhance their surfing experience.
+Gold Coast Surf Forecast is a web application built using Python and Flask to offer real-time updates on surf conditions
+across all the prominent surf spots along the Gold Coast. This platform is designed to provide surfers with accurate
+and timely surf forecasts to enhance their surfing experience.
 
 ## ✨ Features
 - Real-time surf condition updates.
@@ -49,6 +51,7 @@ templates/
 tests/
 ├── conftest.py
 ├── test_app_integration.py
+├── test_external_api.py
 └── test_helpers.py
 Dockerfile
 Procfile
@@ -131,10 +134,16 @@ wsgi.py
 8. Open your browser and go to `http://127.0.0.1:5000`.
 
 ## 🧪 Testing
-Run the full test suite with:
+Run the standard test suite with:
 
 ```bash
 venv/bin/python -m pytest
+```
+
+Run the external API smoke test with:
+
+```bash
+RUN_EXTERNAL_API_TESTS=1 venv/bin/python -m pytest -m external
 ```
 
 ## 🐳 Docker
@@ -164,7 +173,7 @@ venv/bin/python -m pytest
 3. Open your browser and go to `http://127.0.0.1:5000`.
 
 ## 🗒️ Notes
-- The app uses SQLite and PostgreSQL to manage and store user profiles, favorite surf spots, and real-time surf conditions.
+- The app uses SQLite for local development and PostgreSQL when running with Docker.
 
 - Flask-Session provides server-side session management.
 

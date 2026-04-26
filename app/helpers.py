@@ -180,7 +180,7 @@ def get_forecast_info(forecast_type, spot_id):
     # Reuse the shared scraper so Surfline requests keep consistent headers/cookies.
     url = f"https://services.surfline.com/kbyg/spots/forecasts/{forecast_type}?spotId={spot_id}&days=1"
     try:
-        response = SURFLINE_SCRAPER.get(url, headers=SURFLINE_HEADERS, timeout=10)
+        response = SURFLINE_SCRAPER.get(url, headers=SURFLINE_HEADERS, timeout=5)
 
         if response.status_code == 200:
             return response.json()
