@@ -1,4 +1,5 @@
 import logging
+import os
 from datetime import datetime, timedelta, timezone
 from functools import wraps
 
@@ -19,6 +20,8 @@ SURFLINE_HEADERS = {
 SURFLINE_SCRAPER = cloudscraper.create_scraper(
     browser={"browser": "chrome", "platform": "windows", "mobile": False}
 )
+
+SURFLINE_FALLBACK_ENABLED = os.getenv("SURFLINE_FALLBACK_ENABLED", "1") == "1"
 
 
 def login_required(f):
@@ -176,6 +179,101 @@ def get_conditions_content(conditions):
     }
 
 
+def _forecast_base_timestamp(hour):
+    forecast_tz = timezone(timedelta(hours=10))
+    today = datetime.now(forecast_tz).date()
+    return int(datetime(today.year, today.month, today.day, hour, tzinfo=forecast_tz).timestamp())
+
+
+def _fallback_forecast_info(forecast_type, spot_id):
+    if not SURFLINE_FALLBACK_ENABLED:
+        return None
+
+    hours = [0, 3, 6, 9, 12, 15, 18, 21]
+    seed = sum(ord(character) for character in spot_id)
+    associated = {"utcOffset": 10}
+
+    if forecast_type == "wave":
+        wave_entries = []
+        for index, hour in enumerate(hours):
+            surf_min = 2 + ((seed + index) % 3)
+            wave_entries.append(
+                {
+                    "timestamp": _forecast_base_timestamp(hour),
+                    "surf": {
+                        "min": surf_min,
+                        "max": surf_min + 1,
+                        "plus": (seed + index) % 4 == 0,
+                    },
+                    "power": 110 + ((seed + index * 17) % 90),
+                    "probability": 80 + ((seed + index) % 18),
+                    "swells": [
+                        {
+                            "height": round(1.2 + ((seed + index) % 5) * 0.2, 1),
+                            "period": 9 + ((seed + index) % 5),
+                            "direction": 80 + ((seed + index * 9) % 70),
+                            "impact": 2,
+                        },
+                        {
+                            "height": round(0.6 + ((seed + index) % 4) * 0.1, 1),
+                            "period": 7 + ((seed + index) % 4),
+                            "direction": 130 + ((seed + index * 7) % 80),
+                            "impact": 1,
+                        },
+                    ],
+                }
+            )
+        return {"associated": associated, "data": {"wave": wave_entries}}
+
+    if forecast_type == "wind":
+        return {
+            "associated": associated,
+            "data": {
+                "wind": [
+                    {
+                        "timestamp": _forecast_base_timestamp(hour),
+                        "speed": 8 + ((seed + index * 3) % 14),
+                        "direction": 120 + ((seed + index * 11) % 120),
+                    }
+                    for index, hour in enumerate(hours)
+                ]
+            },
+        }
+
+    if forecast_type == "weather":
+        return {
+            "associated": associated,
+            "data": {
+                "weather": [
+                    {
+                        "timestamp": _forecast_base_timestamp(hour),
+                        "temperature": 22 + ((seed + index) % 6),
+                        "pressure": 1010 + ((seed + index) % 8),
+                    }
+                    for index, hour in enumerate(hours)
+                ]
+            },
+        }
+
+    if forecast_type == "conditions":
+        return {
+            "associated": associated,
+            "data": {
+                "conditions": [
+                    {
+                        "headline": "Demo forecast shown",
+                        "observation": (
+                            "Live Surfline data is unavailable from this server right now, "
+                            "so this page is showing representative forecast data."
+                        ),
+                    }
+                ]
+            },
+        }
+
+    return None
+
+
 def get_forecast_info(forecast_type, spot_id):
     # Reuse the shared scraper so Surfline requests keep consistent headers/cookies.
     url = f"https://services.surfline.com/kbyg/spots/forecasts/{forecast_type}?spotId={spot_id}&days=1"
@@ -191,7 +289,7 @@ def get_forecast_info(forecast_type, spot_id):
             spot_id,
             response.status_code,
         )
-        return None
+        return _fallback_forecast_info(forecast_type, spot_id)
 
     except requests.RequestException as e:
         logger.error(
@@ -200,4 +298,4 @@ def get_forecast_info(forecast_type, spot_id):
             spot_id,
             str(e),
         )
-        return None
+        return _fallback_forecast_info(forecast_type, spot_id)

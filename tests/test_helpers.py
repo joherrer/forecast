@@ -1,6 +1,12 @@
 from datetime import datetime, timezone
 
-from app.helpers import build_forecast_rows, degrees_to_cardinal, format_height, format_hour
+from app.helpers import (
+    _fallback_forecast_info,
+    build_forecast_rows,
+    degrees_to_cardinal,
+    format_height,
+    format_hour,
+)
 
 
 def test_format_hour_uses_12_hour_labels():
@@ -66,3 +72,25 @@ def test_build_forecast_rows_combines_wave_wind_and_weather_data():
     assert empty_midday_row["time"] == "12 pm"
     assert empty_midday_row["surf_min"] == "-"
     assert empty_midday_row["wind_direction"]["label"] == "-"
+
+
+def test_fallback_forecast_matches_page_data_shape():
+    spot_id = "5842041f4e65fad6a7708be9"
+    wave = _fallback_forecast_info("wave", spot_id)
+    wind = _fallback_forecast_info("wind", spot_id)
+    weather = _fallback_forecast_info("weather", spot_id)
+    conditions = _fallback_forecast_info("conditions", spot_id)
+
+    rows = build_forecast_rows(
+        wave,
+        wind,
+        weather,
+        overview_hours=[6, 12, 18],
+        forecast_hours=[6, 9, 12, 15, 18],
+    )
+
+    assert wave["data"]["wave"]
+    assert wind["data"]["wind"]
+    assert weather["data"]["weather"]
+    assert conditions["data"]["conditions"][0]["headline"] == "Demo forecast shown"
+    assert rows["overview_rows"][0]["surf_min"] != "-"
