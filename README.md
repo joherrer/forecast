@@ -172,6 +172,12 @@ RUN_EXTERNAL_API_TESTS=1 venv/bin/python -m pytest -m external
 
 3. Open your browser and go to `http://127.0.0.1:5000`.
 
+## 🚀 CI/CD Pipeline
+The project uses GitHub Actions for continuous integration and deployment:
+
+- **CI** runs on pull requests and pushes to `main`, builds the Docker Compose services, and runs the test suite inside the web container.
+- **Deployment** runs after a successful CI workflow on `main`, connects to an AWS EC2 instance over SSH, pulls the latest code, and restarts the app with Docker Compose.
+
 ## 🗒️ Notes
 - The app uses SQLite for local development and PostgreSQL when running with Docker.
 

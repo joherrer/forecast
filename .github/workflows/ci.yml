@@ -1,0 +1,35 @@
+name: CI
+run-name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Create CI environment file
+        run: |
+          cat > .env <<'EOF'
+          SECRET_KEY=test-secret-key
+          POSTGRES_DB=forecast_test
+          POSTGRES_USER=forecast_user
+          POSTGRES_PASSWORD=forecast_password
+          EOF
+
+      - name: Build containers
+        run: docker compose build
+
+      - name: Run tests
+        run: docker compose run --rm web pytest
+
+      - name: Stop containers
+        if: always()
+        run: docker compose down -v
