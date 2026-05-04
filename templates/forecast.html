@@ -56,7 +56,7 @@
                             <td data-label="Wind">{% if row.wind_speed is not none %}{{ row.wind_speed|round(0, 'common')|int }}kts{% else %}-{% endif %} &nbsp;<span class="direction-text">{{ row.wind_direction.label }}{% if row.wind_direction.rotation is not none %}<span class="direction-arrow" style="--direction-rotation: {{ row.wind_direction.rotation }}deg;" aria-hidden="true"><svg viewBox="0 0 16 16" focusable="false"><path d="M8 2 11.5 5.5H9V14H7V5.5H4.5z"></path></svg></span>{% endif %}</span></td>
                         </tr>
                     {% endfor %}
-                </tbody>                                       
+                </tbody>
             </table>
             </div>
         </section>
@@ -117,7 +117,7 @@
                             <td data-label="Probability">{% if row.probability is not none %}{{ row.probability|round(0, 'common')|int }}%{% else %}-{% endif %}</td>
                         </tr>
                     {% endfor %}
-                </tbody>                                         
+                </tbody>
             </table>
             </div>
         </section>
