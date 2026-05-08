@@ -1,4 +1,5 @@
 # Gold Coast Surf Forecast
+
 ![Python Version](https://img.shields.io/badge/python-3.11-blue)
 ![Flask](https://img.shields.io/badge/Flask-%E2%9C%94-green)
 ![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-%E2%9C%94-green)
@@ -6,17 +7,20 @@
 ![Homepage Screenshot](static/images/homepage/homepage.jpeg)
 
 ## 🌊 Overview
+
 Gold Coast Surf Forecast is a web application built using Python and Flask to offer real-time updates on surf conditions
 across all the prominent surf spots along the Gold Coast. This platform is designed to provide surfers with accurate
 and timely surf forecasts to enhance their surfing experience.
 
 ## ✨ Features
+
 - Real-time surf condition updates.
 - User authentication and account management.
 - Save and manage favorite surf spots.
 - Responsive and user-friendly design optimized for desktops, tablets, and mobile phones.
 
 ## 🖥️ Technology Stack
+
 - **Front-End**: HTML, CSS, Jinja2
 - **Back-End**: Python, Flask
 - **Database**: SQLite / PostgreSQL
@@ -63,6 +67,7 @@ wsgi.py
 ```
 
 ## 🏄 Usage
+
 1. Register a new account or log in if you already have one.
 2. Browse surf spots and save your favorites.
 3. View detailed surf conditions of your favorite spots from your personalized favorites page.
@@ -70,11 +75,13 @@ wsgi.py
 ## 🛠️ Development Setup
 
 ### Prerequisites
+
 - Python 3.11+
 - Flask
 - SQLAlchemy
 
 ### Installation
+
 1. Clone the repository:
 
     ```bash
@@ -134,11 +141,14 @@ wsgi.py
 8. Open your browser and go to `http://127.0.0.1:5000`.
 
 ## 🧪 Testing
+
 Run the standard test suite with:
 
 ```bash
 venv/bin/python -m pytest
 ```
+
+The test suite uses Testcontainers to start a temporary PostgreSQL database, run the tests, and remove the database afterward. Docker must be available to run the tests.
 
 Run the external API smoke test with:
 
@@ -149,10 +159,12 @@ RUN_EXTERNAL_API_TESTS=1 venv/bin/python -m pytest -m external
 ## 🐳 Docker
 
 ### Prerequisites
+
 - Docker
 - Docker Compose
 
 ### Run with Docker
+
 1. Make sure your `.env` file includes:
 
     ```env
@@ -173,12 +185,14 @@ RUN_EXTERNAL_API_TESTS=1 venv/bin/python -m pytest -m external
 3. Open your browser and go to `http://127.0.0.1:5000`.
 
 ## 🚀 CI/CD Pipeline
+
 The project uses GitHub Actions for continuous integration and deployment:
 
-- **CI** runs on pull requests and pushes to `main`, builds the Docker Compose services, and runs the test suite inside the web container.
+- **CI** runs on pull requests and pushes to `main`, installs Python dependencies, and runs the pytest suite with PostgreSQL provided by Testcontainers.
 - **Deployment** runs after a successful CI workflow on `main`, connects to an AWS EC2 instance over SSH, pulls the latest code, and restarts the app with Docker Compose.
 
 ## 🗒️ Notes
+
 - The app uses SQLite for local development and PostgreSQL when running with Docker.
 
 - Flask-Session provides server-side session management.
@@ -188,4 +202,5 @@ The project uses GitHub Actions for continuous integration and deployment:
 - The data is fetched from an external API (Surfline).
 
 ## 📜 License
+
 Copyright (c) 2025 Jose Herrera. All rights reserved.
