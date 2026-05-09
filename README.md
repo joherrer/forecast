@@ -1,76 +1,87 @@
 # Gold Coast Surf Forecast
 
 ![Python Version](https://img.shields.io/badge/python-3.11-blue)
-![Flask](https://img.shields.io/badge/Flask-%E2%9C%94-green)
-![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-%E2%9C%94-green)
+![Flask](https://img.shields.io/badge/Flask-✔-green)
+![SQLAlchemy](https://img.shields.io/badge/PostgreSQL-✔-green)
+![Docker](https://img.shields.io/badge/Docker-✔-green)
 
 ![Homepage Screenshot](static/images/homepage/homepage.jpeg)
 
 ## 🌊 Overview
 
-Gold Coast Surf Forecast is a web application built using Python and Flask to offer real-time updates on surf conditions
-across all the prominent surf spots along the Gold Coast. This platform is designed to provide surfers with accurate
+Gold Coast Surf Forecast is a web application built using Python and Flask to
+offer real-time updates on surf conditions across all the prominent surf spots
+along the Gold Coast. This platform is designed to provide surfers with accurate
 and timely surf forecasts to enhance their surfing experience.
 
 ## ✨ Features
 
-- Real-time surf condition updates.
-- User authentication and account management.
-- Save and manage favorite surf spots.
-- Responsive and user-friendly design optimized for desktops, tablets, and mobile phones.
+- Real-time surf forecasts powered by Surfline API integration.
+- Browse surf conditions across major Gold Coast surf spots.
+- View detailed surf metrics including wave, swell, and wind conditions.
+- Create accounts and save favorite surf spots for quick access.
+- Secure authentication with password hashing and CSRF protection.
+- Responsive design optimized for desktop, tablet, and mobile devices.
+- Docker support for consistent development and deployment.
+- Automated testing using pytest and Testcontainers.
+- CI/CD pipeline with GitHub Actions and AWS EC2 deployment.
 
-## 🖥️ Technology Stack
+## 🖥️ Tech Stack
 
 - **Front-End**: HTML, CSS, Jinja2
 - **Back-End**: Python, Flask
-- **Database**: SQLite / PostgreSQL
+- **Database**: PostgreSQL / SQLite
 - **ORM**: SQLAlchemy
-- **Session Management**: Flask-Session
+- **Sessions**: Flask-Session
 - **Security**: Werkzeug, Flask-WTF
+- **Containers**: Docker
+- **CI/CD**: GitHub Actions
 
 ## 🏗️ Project Structure
 
 ```text
-app/
-├── __init__.py
-├── __main__.py
-├── data.py
-├── extensions.py
-├── helpers.py
-├── models.py
-└── routes.py
-static/
-├── icons/
-├── images/
-├── main.js
-└── styles.css
-templates/
-├── favorites.html
-├── forecast.html
-├── index.html
-├── layout.html
-├── login.html
-├── register.html
-└── spots.html
-tests/
-├── conftest.py
-├── test_app_integration.py
-├── test_external_api.py
-└── test_helpers.py
-Dockerfile
-Procfile
-docker-compose.yml
-pytest.ini
-README.md
-requirements.txt
-wsgi.py
+.
+├── app/
+│   ├── __init__.py
+│   ├── __main__.py
+│   ├── data.py
+│   ├── extensions.py
+│   ├── helpers.py
+│   ├── models.py
+│   └── routes.py
+├── static/
+│   ├── icons/
+│   ├── images/
+│   ├── main.js
+│   └── styles.css
+├── templates/
+│   ├── favorites.html
+│   ├── forecast.html
+│   ├── index.html
+│   ├── layout.html
+│   ├── login.html
+│   ├── register.html
+│   └── spots.html
+├── tests/
+│   ├── conftest.py
+│   ├── test_app_integration.py
+│   ├── test_external_api.py
+│   └── test_helpers.py
+├── Dockerfile
+├── Procfile
+├── docker-compose.yml
+├── pytest.ini
+├── README.md
+├── requirements.txt
+└── wsgi.py
 ```
 
 ## 🏄 Usage
 
 1. Register a new account or log in if you already have one.
 2. Browse surf spots and save your favorites.
-3. View detailed surf conditions of your favorite spots from your personalized favorites page.
+3. View detailed surf conditions of your favorite spots from your personalized
+   favorites page.
 
 ## 🛠️ Development Setup
 
@@ -148,7 +159,9 @@ Run the standard test suite with:
 venv/bin/python -m pytest
 ```
 
-The test suite uses Testcontainers to start a temporary PostgreSQL database, run the tests, and remove the database afterward. Docker must be available to run the tests.
+The test suite uses Testcontainers to start a temporary PostgreSQL database,
+run the tests, and remove the database afterward. Docker must be available to
+run the tests.
 
 Run the external API smoke test with:
 
@@ -188,16 +201,23 @@ RUN_EXTERNAL_API_TESTS=1 venv/bin/python -m pytest -m external
 
 The project uses GitHub Actions for continuous integration and deployment:
 
-- **CI** runs on pull requests and pushes to `main`, installs Python dependencies, and runs the pytest suite with PostgreSQL provided by Testcontainers.
-- **Deployment** runs after a successful CI workflow on `main`, connects to an AWS EC2 instance over SSH, pulls the latest code, and restarts the app with Docker Compose.
+- **CI** runs on pull requests and pushes to `main`, installs Python
+  dependencies, and runs the pytest suite with PostgreSQL provided by
+  Testcontainers.
+
+- **Deployment** runs after a successful CI workflow on `main`, connects to an
+  AWS EC2 instance over SSH, pulls the latest code, and restarts the app with
+  Docker Compose.
 
 ## 🗒️ Notes
 
-- The app uses SQLite for local development and PostgreSQL when running with Docker.
+- The app uses SQLite for local development and PostgreSQL when running with
+  Docker.
 
 - Flask-Session provides server-side session management.
 
-- Werkzeug handles secure password hashing, and Flask-WTF provides CSRF protection for form submissions.
+- Werkzeug handles secure password hashing, and Flask-WTF provides CSRF
+  protection for form submissions.
 
 - The data is fetched from an external API (Surfline).
 
