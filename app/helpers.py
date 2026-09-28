@@ -7,7 +7,6 @@ import cloudscraper
 import requests
 from flask import redirect, session, url_for
 
-
 logger = logging.getLogger(__name__)
 
 SURFLINE_HEADERS = {

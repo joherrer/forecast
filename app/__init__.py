@@ -7,7 +7,6 @@ from flask import Flask, request, session
 
 from .extensions import csrf, db, flask_session
 
-
 load_dotenv()
 
 PACKAGE_DIR = Path(__file__).resolve().parent

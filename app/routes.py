@@ -6,9 +6,13 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from .data import spot_order, spot_slugs, spots
 from .extensions import db
-from .helpers import build_forecast_rows, get_conditions_content, get_forecast_info, login_required
+from .helpers import (
+    build_forecast_rows,
+    get_conditions_content,
+    get_forecast_info,
+    login_required,
+)
 from .models import Favorites, Users
-
 
 routes_bp = Blueprint("routes", __name__)
 
