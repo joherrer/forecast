@@ -195,7 +195,7 @@ RUN_EXTERNAL_API_TESTS=1 venv/bin/python -m pytest -m external
     docker compose up --build
     ```
 
-3. Open your browser and go to `http://127.0.0.1:5000`.
+3. Open your browser and go to `http://127.0.0.1:80`.
 
 ## 🚀 CI/CD Pipeline
 
